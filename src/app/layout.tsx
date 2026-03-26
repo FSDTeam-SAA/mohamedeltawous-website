@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Sora } from "next/font/google";
 import "./globals.css";
 import MainProviders from "@/Providers/MainProviders";
 import Provider from "@/Providers/Provider";
 import { Toaster } from "sonner";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "sktch Labs",
+  title: "Second Sight",
   description:
-    "Design amazing digital experiences that create more happy in the world.",
+    "The intelligence layer for the modern boardroom. Transforming uncertainty into competitive advantage.",
 };
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} antialiased`}>
+      <body className={`${sora.variable} antialiased`}>
         <MainProviders>
           <Provider> {children} </Provider>
         </MainProviders>
