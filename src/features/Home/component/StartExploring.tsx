@@ -37,10 +37,6 @@ export default function StartExploring() {
             <button className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">
               Start Scenario Analysis
             </button>
-
-            <button className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition">
-              Book a Demo
-            </button>
           </div>
         </div>
       </div>
