@@ -85,9 +85,10 @@ export default function Banner() {
             </div>
 
             <div className="p-5 md:p-10">
-              <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+              {/* <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]"> */}
+              <div className="">
                 {/* Left sidebar */}
-                <div className="space-y-6">
+                {/* <div className="space-y-6">
                   <div className="rounded-[24px] bg-secondary p-7">
                     <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#4B5E7D]">
                       Robustness Score
@@ -130,7 +131,7 @@ export default function Banner() {
                       ))}
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Right matrix */}
                 <div className="rounded-[24px] bg-secondary p-6 md:p-8">
