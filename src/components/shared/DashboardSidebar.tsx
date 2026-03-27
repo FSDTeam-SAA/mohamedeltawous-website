@@ -14,7 +14,11 @@ import {
 import { useSession } from "next-auth/react";
 
 const sidebarNavItems = [
-  { name: "Dashboard Overview", href: "/dashboard", icon: LayoutGrid },
+  {
+    name: "Dashboard Overview",
+    href: "/dashboard/dashboard-overview",
+    icon: LayoutGrid,
+  },
   { name: "New Scenario", href: "/dashboard/new-scenario", icon: PlusSquare },
   { name: "History", href: "/dashboard/history", icon: FolderClock },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
