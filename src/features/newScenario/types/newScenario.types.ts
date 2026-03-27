@@ -34,10 +34,18 @@ export interface ClassifyPayload {
   conversationHistory: unknown[]; // Using unknown[] for now as it's empty
 }
 
+export interface ForceItem {
+  force: string;
+  rationale: string;
+  impact?: string;
+}
+
 export interface ClassifyResponse {
-  message: string;
-  status: string;
-  data?: unknown; // Keeping unknown here for data
+  success: boolean;
+  data: {
+    predetermined: ForceItem[];
+    uncertainties: ForceItem[];
+  };
 }
 
 export interface ScenarioState {

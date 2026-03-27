@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useScenarioStore } from "../store/useScenarioStore";
 import { useClassifyWorkshop } from "../hooks/useNewScenario";
+import ForceClassificationModal from "./ForceClassificationModal";
+import { ClassifyResponse } from "../types/newScenario.types";
 import {
   Check,
   Sparkles,
@@ -44,6 +46,12 @@ export default function NewScenario() {
 
   const [dfError, setDfError] = useState("");
   const [customCatInput, setCustomCatInput] = useState("");
+
+  const [isClassificationModalOpen, setIsClassificationModalOpen] =
+    useState(false);
+  const [classificationData, setClassificationData] = useState<
+    ClassifyResponse["data"] | null
+  >(null);
 
   const handleToggleCategory = (cat: string) => {
     const exists = movingFactors.find(
@@ -595,9 +603,13 @@ export default function NewScenario() {
                   );
 
                   try {
-                    await classifyWorker(payload);
+                    const response = await classifyWorker(payload);
                     console.log("Successfully submitted data to API.");
-                    // Optionally move to next step or show success
+
+                    if (response?.data) {
+                      setClassificationData(response.data);
+                      setIsClassificationModalOpen(true);
+                    }
                   } catch (err) {
                     console.error("API submission failed:", err);
                     setDfError(
@@ -612,6 +624,14 @@ export default function NewScenario() {
               </button>
             </div>
           </div>
+        )}
+        {/* Classification Modal */}
+        {classificationData && (
+          <ForceClassificationModal
+            isOpen={isClassificationModalOpen}
+            onClose={() => setIsClassificationModalOpen(false)}
+            data={classificationData}
+          />
         )}
         {/* Step 4 Placeholder */}
         {currentStep === 4 && (
