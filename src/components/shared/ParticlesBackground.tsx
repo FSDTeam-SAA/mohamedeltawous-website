@@ -1,19 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
+import type { Container, Engine } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import type { ISourceOptions } from "@tsparticles/engine";
 
 export default function ParticlesBackground() {
   const [init, setInit] = useState(false);
 
+  // this should be run only once per application lifetime
   useEffect(() => {
-    initParticlesEngine(async (engine) => {
+    initParticlesEngine(async (engine: Engine) => {
+      // you can initiate the tsParticles instance (engine) here, adding custom shapes or presets
+      // this loads the slim version of tsParticles for better performance
       await loadSlim(engine);
     }).then(() => {
       setInit(true);
     });
+  }, []);
+
+  const particlesLoaded = useCallback(async (container?: Container) => {
+    // console.log(container);
   }, []);
 
   const options: ISourceOptions = {
@@ -36,7 +44,7 @@ export default function ParticlesBackground() {
         grab: {
           distance: 360,
           links: {
-            opacity: 0.4,
+            opacity: 0.35,
           },
         },
         push: {
@@ -46,14 +54,14 @@ export default function ParticlesBackground() {
     },
     particles: {
       color: {
-        value: ["rgb(166,180,187)", "#657C86"],
+        value: ["rgb(166,180,187)", "#A6B4BB"],
       },
       links: {
         color: ["rgb(166,180,187)", "#A6B4BB"],
         distance: 200,
         enable: true,
         opacity: 0.5,
-        width: 3,
+        width: 2,
       },
       move: {
         direction: "none",
@@ -61,9 +69,7 @@ export default function ParticlesBackground() {
         outModes: {
           default: "bounce",
         },
-        random: false,
         speed: 1,
-        straight: false,
       },
       number: {
         density: {
@@ -87,15 +93,15 @@ export default function ParticlesBackground() {
     },
   };
 
-  if (init) {
-    return (
+  if (!init) return null;
+
+  return (
+    <div className="absolute inset-0 -z-10 h-full w-full pointer-events-none">
       <Particles
         id="tsparticles"
+        particlesLoaded={particlesLoaded}
         options={options}
-        className="absolute inset-x-0 top-0 h-full w-full pointer-events-none"
       />
-    );
-  }
-
-  return null;
+    </div>
+  );
 }

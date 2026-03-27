@@ -34,7 +34,7 @@ const scenarios = [
 
 export default function Banner() {
   return (
-    <section className="relative overflow-hidden bg-[#EAF5FF] px-4 pb-16 pt-32 md:pb-24 md:pt-40">
+    <section className="relative overflow-hidden bg-secondary px-4 pb-16 pt-32 md:pb-24 md:pt-40">
       {/* Dynamic Particles Background */}
       <div className="absolute inset-0 z-0">
         <ParticlesBackground />
@@ -88,7 +88,7 @@ export default function Banner() {
               <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
                 {/* Left sidebar */}
                 <div className="space-y-6">
-                  <div className="rounded-[24px] bg-[#E9F3FB] p-7">
+                  <div className="rounded-[24px] bg-secondary p-7">
                     <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#4B5E7D]">
                       Robustness Score
                     </p>
@@ -107,7 +107,7 @@ export default function Banner() {
                     </div>
                   </div>
 
-                  <div className="rounded-[24px] bg-[#E9F3FB] p-7">
+                  <div className="rounded-[24px] bg-secondary p-7">
                     <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#4B5E7D]">
                       Risk Indicators
                     </p>
@@ -133,9 +133,9 @@ export default function Banner() {
                 </div>
 
                 {/* Right matrix */}
-                <div className="rounded-[24px] bg-[#E9F3FB] p-6 md:p-8">
+                <div className="rounded-[24px] bg-secondary p-6 md:p-8">
                   <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                    <h3 className="text-[22px] font-extrabold text-[#0F172A]">
+                    <h3 className="text-[22px] font-extrabold text-primary">
                       Scenario Intelligence Matrix
                     </h3>
 

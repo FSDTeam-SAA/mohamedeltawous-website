@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -15,6 +15,24 @@ const navItems = [
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Switch style after 20px of scroll
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -22,7 +40,13 @@ export default function Navbar() {
   };
 
   return (
-    <header className="w-full bg-transparent">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ease-in-out ${
+        isScrolled
+          ? "bg-secondary backdrop-blur-lg border-b border-gray-200/50 shadow-sm py-0"
+          : "bg-transparent shadow-none py-2 border-b border-gray-200/70"
+      }`}
+    >
       <div className="container mx-auto flex h-[80px] md:h-[100px] items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link href="/" className="shrink-0">
