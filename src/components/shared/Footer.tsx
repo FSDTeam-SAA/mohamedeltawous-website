@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { LinkedinIcon, Twitter, Instagram } from "lucide-react";
 
 export default function Footer() {
@@ -11,12 +12,15 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-6">
           {/* Left */}
           <div className="lg:col-span-2">
-            <Image
-              src="/images/logo.png"
-              alt="Second Sight"
-              width={120}
-              height={60}
-            />
+            <Link href="/">
+              <Image
+                src="/images/logo.png"
+                alt="Second Sight"
+                width={120}
+                height={60}
+                className="cursor-pointer"
+              />
+            </Link>
 
             <p className="mt-5 max-w-md text-sm text-[#5f6b7a] leading-relaxed">
               The intelligence layer for the modern boardroom. Transform
@@ -26,56 +30,91 @@ export default function Footer() {
             <p className="mt-6 text-sm font-medium text-[#1f2937]">Follow us</p>
 
             <div className="mt-3 flex items-center gap-3">
-              <div className="p-2 bg-[#0B1533] rounded">
+              <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <LinkedinIcon size={14} className="text-white" />
-              </div>
-              <div className="p-2 bg-[#0B1533] rounded">
+              </a>
+              <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <Twitter size={14} className="text-white" />
-              </div>
-              <div className="p-2 bg-[#0B1533] rounded">
+              </a>
+              <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <Instagram size={14} className="text-white" />
-              </div>
+              </a>
             </div>
           </div>
 
-          {/* Links */}
+          {/* Product */}
           <div>
             <h3 className="font-semibold text-[#1f2937]">Product</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
-              <li>Scenario Builder</li>
-              <li>Stress Tester</li>
-              <li>Risk Engine</li>
-              <li>Reporting</li>
+              <li>
+                <Link href="/scenario-builder">Scenario Builder</Link>
+              </li>
+              <li>
+                <Link href="/stress-tester">Stress Tester</Link>
+              </li>
+              <li>
+                <Link href="/risk-engine">Risk Engine</Link>
+              </li>
+              <li>
+                <Link href="/reporting">Reporting</Link>
+              </li>
             </ul>
           </div>
 
+          {/* Platform */}
           <div>
             <h3 className="font-semibold text-[#1f2937]">Platform</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
-              <li>Enterprise Security</li>
-              <li>API Access</li>
-              <li>Integrations</li>
-              <li>Documentation</li>
+              <li>
+                <Link href="/security">Enterprise Security</Link>
+              </li>
+              <li>
+                <Link href="/api">API Access</Link>
+              </li>
+              <li>
+                <Link href="/integrations">Integrations</Link>
+              </li>
+              <li>
+                <Link href="/docs">Documentation</Link>
+              </li>
             </ul>
           </div>
 
+          {/* Resources */}
           <div>
             <h3 className="font-semibold text-[#1f2937]">Resources</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
-              <li>Strategy Blog</li>
-              <li>Case Studies</li>
-              <li>Playbooks</li>
-              <li>Webinars</li>
+              <li>
+                <Link href="/blog">Strategy Blog</Link>
+              </li>
+              <li>
+                <Link href="/case-studies">Case Studies</Link>
+              </li>
+              <li>
+                <Link href="/playbooks">Playbooks</Link>
+              </li>
+              <li>
+                <Link href="/webinars">Webinars</Link>
+              </li>
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
             <h3 className="font-semibold text-[#1f2937]">Contact</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
-              <li>Sales</li>
-              <li>Support</li>
-              <li>Partners</li>
-              <li>Legal</li>
+              <li>
+                <Link href="/contact">Sales</Link>
+              </li>
+              <li>
+                <Link href="/support">Support</Link>
+              </li>
+              <li>
+                <Link href="/partners">Partners</Link>
+              </li>
+              <li>
+                <Link href="/legal">Legal</Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -83,16 +122,17 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-[#c9d8e3] pt-6">
           <p className="text-sm text-[#5f6b7a]">
-            © 2024 SECOND SIGHT AI Platform. All rights reserved.
+            © {new Date().getFullYear()} SECOND SIGHT AI Platform. All rights
+            reserved.
           </p>
 
           <div className="flex items-center gap-6 text-sm text-[#5f6b7a]">
-            <span className="hover:text-[#1f2937] cursor-pointer">
+            <Link href="/privacy" className="hover:text-[#1f2937]">
               Privacy Policy
-            </span>
-            <span className="hover:text-[#1f2937] cursor-pointer">
+            </Link>
+            <Link href="/terms" className="hover:text-[#1f2937]">
               Terms of Service
-            </span>
+            </Link>
           </div>
         </div>
       </div>
