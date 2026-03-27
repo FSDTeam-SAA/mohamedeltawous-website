@@ -96,7 +96,7 @@ export default function Navbar() {
           </Link> */}
 
           <Link
-            href="/scenario-analysis"
+            href="/dashboard/new-scenario"
             className="hidden sm:inline-flex rounded-lg bg-[#0f172a] px-5 py-2.5 text-[14px] md:px-6 md:py-3.5 md:text-[15px] font-semibold text-white transition hover:opacity-90 shadow-lg shadow-gray-200"
           >
             Start Scenario Analysis
@@ -141,7 +141,7 @@ export default function Navbar() {
           })}
 
           <Link
-            href="/scenario-analysis"
+            href="/dashboard/new-scenario"
             onClick={() => setIsOpen(false)}
             className="mt-4 inline-flex justify-center rounded-lg bg-[#0f172a] px-4 py-3 text-[14px] font-semibold text-white transition hover:opacity-90 sm:hidden"
           >
