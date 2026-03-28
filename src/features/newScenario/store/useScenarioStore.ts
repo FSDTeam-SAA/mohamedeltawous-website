@@ -18,6 +18,12 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
   forces: [],
   movingFactors: [],
   axes: null,
+  strategicOptions: [
+    "Option A: Full digital platform build — invest AED 400M over five years to build a standalone retail digital wealth platform targeting the mass-affluent segment.",
+    "Option B: Digitally enhanced relationship model — invest AED 120M in client-facing digital tools, AI-assisted advisor support, and improved reporting, while keeping the relationship model intact.",
+    "Option C: Stay the course — minimal digital investment, focus resources on deepening HNW relationships and expanding geographically within the GCC.",
+  ],
+  windtunnelData: null,
   conversationHistory: [],
 
   // Actions
@@ -54,6 +60,10 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
 
   updateAxes: (axes) => set({ axes }),
 
+  updateStrategicOptions: (options) => set({ strategicOptions: options }),
+
+  setWindtunnelData: (data) => set({ windtunnelData: data }),
+
   addHistory: (role, content) =>
     set((state) => ({
       conversationHistory: [...state.conversationHistory, { role, content }],
@@ -66,6 +76,12 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       forces: [],
       movingFactors: [],
       axes: null,
+      strategicOptions: [
+        "Option A: Full digital platform build — invest AED 400M over five years to build a standalone retail digital wealth platform targeting the mass-affluent segment.",
+        "Option B: Digitally enhanced relationship model — invest AED 120M in client-facing digital tools, AI-assisted advisor support, and improved reporting, while keeping the relationship model intact.",
+        "Option C: Stay the course — minimal digital investment, focus resources on deepening HNW relationships and expanding geographically within the GCC.",
+      ],
+      windtunnelData: null,
       conversationHistory: [],
     }),
 }));
