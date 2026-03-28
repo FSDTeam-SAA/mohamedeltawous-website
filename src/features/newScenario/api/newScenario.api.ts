@@ -19,7 +19,9 @@ export const classifyWorkshop = async (
   data: ClassifyPayload,
 ): Promise<ClassifyResponse> => {
   try {
-    const response = await axiosInstance.post(`/workshop/classify`, data);
+    const response = await axiosInstance.post(`/workshop/classify`, data, {
+      timeout: 180000, // 3 minutes timeout
+    });
     return response.data;
   } catch (error: unknown) {
     throw error;

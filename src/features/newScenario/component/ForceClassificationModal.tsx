@@ -184,7 +184,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
                 console.error("Axes generation failed:", err);
               }
             }}
-            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center"
+            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center cursor-pointer"
           >
             {isPending ? (
               <>

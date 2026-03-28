@@ -142,9 +142,20 @@ export interface ScenariosPayload {
   conversationHistory: { role: string; content: string }[];
 }
 
+export interface ScenarioResult {
+  id: number;
+  name: string;
+  combination: string;
+  story: string;
+  implications: string;
+  signposts: string[];
+}
+
 export interface ScenariosResponse {
   success: boolean;
-  data: MatrixData;
+  data: {
+    scenarios: ScenarioResult[];
+  };
 }
 
 export interface ScenarioState {
