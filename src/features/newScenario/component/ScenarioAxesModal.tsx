@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { X, Layers, Loader2, ArrowRight } from "lucide-react";
-import { AxesData, MatrixData } from "../types/newScenario.types";
+import { AxesData, ScenariosResponse } from "../types/newScenario.types";
 import { useGenerateScenarios } from "../hooks/useNewScenario";
 import { useScenarioStore } from "../store/useScenarioStore";
 import StrategicMatrixChart from "./StrategicMatrixChart";
@@ -11,14 +11,14 @@ interface ScenarioAxesModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: AxesData;
-  onMatrixGenerated: (data: MatrixData) => void;
+  onScenariosGenerated: (data: ScenariosResponse["data"]) => void;
 }
 
 const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
   isOpen,
   onClose,
   data: axesData,
-  onMatrixGenerated,
+  onScenariosGenerated,
 }) => {
   const { company, setStep, forces, conversationHistory } = useScenarioStore();
   const { mutateAsync: generateScenarios, isPending: isGenerating } =
@@ -150,7 +150,7 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                   console.log("Scenario Generation Response:", response);
 
                   if (response?.data) {
-                    onMatrixGenerated(response.data);
+                    onScenariosGenerated(response.data);
                     onClose();
                     setStep(4);
                   }

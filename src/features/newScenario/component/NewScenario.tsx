@@ -5,15 +5,10 @@ import { useScenarioStore } from "../store/useScenarioStore";
 import { useClassifyWorkshop, useGenerateAxes } from "../hooks/useNewScenario";
 import ForceClassificationModal from "./ForceClassificationModal";
 import ScenarioAxesModal from "./ScenarioAxesModal";
-import ScenarioMatrixView from "./ScenarioMatrixView";
-import {
-  AxesData,
-  ClassifyResponse,
-  MatrixData,
-} from "../types/newScenario.types";
+import { AxesData, ClassifyResponse } from "../types/newScenario.types";
+import ScenarioResultView from "./ScenarioResultView";
 import {
   Check,
-  Sparkles,
   Plus,
   Trash2,
   ChevronLeft,
@@ -23,6 +18,7 @@ import {
   Search,
   Zap,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 
 const PREDEFINED_CATEGORIES = [
@@ -66,8 +62,6 @@ export default function NewScenario() {
 
   const [isAxesModalOpen, setIsAxesModalOpen] = useState(false);
   const [axesData, setAxesData] = useState<AxesData | null>(null);
-
-  const [matrixData, setMatrixData] = useState<MatrixData | null>(null);
 
   const handleToggleCategory = (cat: string) => {
     const exists = movingFactors.find(
@@ -300,13 +294,13 @@ export default function NewScenario() {
             </div>
 
             {/* AI Tip */}
-            <div className="mt-10 bg-[#DEF0FA] border border-blue-100 rounded-2xl p-6 flex gap-4 items-start shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-                <Sparkles className="w-5 h-5 text-[#0F172A]" />
+            <div className="bg-[#ECFDF5] border border-emerald-100 rounded-4xl p-8 flex gap-6 items-start shadow-sm mt-10 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
               </div>
               <div className="text-sm">
-                <p className="font-black text-[#0F172A] mb-1 uppercase tracking-wider text-[10px]">
-                  AI Strategy Tip
+                <p className="font-black text-emerald-900 mb-2 uppercase tracking-widest text-[10px]">
+                  Strategic Formulation Tip
                 </p>
                 <p className="text-slate-700 leading-relaxed font-medium">
                   Try to include a specific timeframe and a core business
@@ -340,7 +334,7 @@ export default function NewScenario() {
               </button>
             </div>
           </div>
-        )}{" "}
+        )}
         {/* Card for Step 2 - Company Profiling */}
         {currentStep === 2 && (
           <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-10 border border-slate-100">
@@ -706,33 +700,13 @@ export default function NewScenario() {
             isOpen={isAxesModalOpen}
             onClose={() => setIsAxesModalOpen(false)}
             data={axesData}
-            onMatrixGenerated={(data) => {
-              setMatrixData(data);
+            onScenariosGenerated={() => {
+              // Navigation to stats 4 handled via setStep(4) in modal
             }}
           />
         )}
-        {/* Step 4: Scenario Matrix View */}
-        {currentStep === 4 && matrixData && axesData && (
-          <ScenarioMatrixView
-            matrix={matrixData}
-            axisA={axesData.axisA}
-            axisB={axesData.axisB}
-          />
-        )}
-        {!matrixData && currentStep === 4 && (
-          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-20 text-center border border-slate-100 animate-pulse">
-            <div className="w-20 h-20 rounded-3xl bg-[#DEF0FA] flex items-center justify-center mx-auto mb-8 shadow-sm">
-              <Sparkles className="w-10 h-10 text-[#0F172A]" />
-            </div>
-            <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter">
-              Synthesizing Strategic Worlds
-            </h2>
-            <p className="text-slate-500 mt-4 max-w-md mx-auto font-medium leading-relaxed">
-              We&apos;re processing your inputs to build the final scenario
-              matrix. This core framework will define your strategic horizons.
-            </p>
-          </div>
-        )}
+        {/* Step 4: Scenario Results Deep Dive */}
+        {currentStep === 4 && <ScenarioResultView />}
       </div>
     </section>
   );
