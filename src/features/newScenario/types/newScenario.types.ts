@@ -67,14 +67,24 @@ export interface AxesPayload {
 
 export interface AxisResult {
   label: string;
-  pole1: string;
-  pole2: string;
+  pole1?: string;
+  pole2?: string;
+  poleA1?: string;
+  poleA2?: string;
+  poleB1?: string;
+  poleB2?: string;
   reason: string;
 }
 
 export interface AxesData {
   axisA: AxisResult;
   axisB: AxisResult;
+  scenarios?: {
+    topRight: { name: string; summary: string };
+    topLeft: { name: string; summary: string };
+    bottomLeft: { name: string; summary: string };
+    bottomRight: { name: string; summary: string };
+  };
 }
 
 export interface AxesResponse {
