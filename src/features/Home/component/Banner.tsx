@@ -140,14 +140,14 @@ export default function Banner() {
                       Scenario Intelligence Matrix
                     </h3>
 
-                    <div className="inline-flex w-fit items-center rounded-xl border border-gray-200 bg-white/60 p-1.5 backdrop-blur-sm">
+                    {/* <div className="inline-flex w-fit items-center rounded-xl border border-gray-200 bg-white/60 p-1.5 backdrop-blur-sm">
                       <button className="rounded-lg px-5 py-2 text-[14px] font-bold text-[#0F172A] cursor-pointer">
                         Week
                       </button>
                       <button className="rounded-lg bg-[#0F172A] px-5 py-2 text-[14px] font-bold text-white shadow-lg cursor-pointer">
                         Month
                       </button>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="mt-8 grid gap-5 md:grid-cols-2">
