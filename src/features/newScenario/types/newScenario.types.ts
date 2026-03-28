@@ -118,11 +118,42 @@ export interface MatrixPayload {
   conversationHistory: unknown[];
 }
 
+export interface ScenariosPayload {
+  company: {
+    name: string;
+    industry: string;
+    summary: string;
+    focalQuestion: string;
+    horizonYear: string;
+  };
+  axes: {
+    axisA: {
+      label: string;
+      poleA1: string;
+      poleA2: string;
+    };
+    axisB: {
+      label: string;
+      poleB1: string;
+      poleB2: string;
+    };
+  };
+  forces: string[];
+  conversationHistory: { role: string; content: string }[];
+}
+
+export interface ScenariosResponse {
+  success: boolean;
+  data: MatrixData;
+}
+
 export interface ScenarioState {
   currentStep: number;
   company: CompanyInfo;
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
+  axes: AxesData | null;
+  conversationHistory: { role: "user" | "assistant"; content: string }[];
 
   // Actions
   setStep: (step: number) => void;
@@ -130,5 +161,7 @@ export interface ScenarioState {
   addForce: (force: Omit<DrivingForce, "id" | "formatted">) => void;
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
+  updateAxes: (axes: AxesData) => void;
+  addHistory: (role: "user" | "assistant", content: string) => void;
   resetStore: () => void;
 }

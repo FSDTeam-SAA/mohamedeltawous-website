@@ -9,6 +9,8 @@ import {
   ClassifyResponse,
   MatrixPayload,
   MatrixResponse,
+  ScenariosPayload,
+  ScenariosResponse,
 } from "../types/newScenario.types";
 
 // POST /workshop/classify
@@ -44,6 +46,21 @@ export const generateMatrix = async (
 ): Promise<MatrixResponse> => {
   try {
     const response = await axiosInstance.post(`/workshop/matrix`, data);
+    return response.data;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+// POST /workshop/scenarios
+
+export const generateScenarios = async (
+  data: ScenariosPayload,
+): Promise<ScenariosResponse> => {
+  try {
+    const response = await axiosInstance.post(`/workshop/scenarios`, data, {
+      timeout: 180000, // 3 minutes timeout
+    });
     return response.data;
   } catch (error: unknown) {
     throw error;

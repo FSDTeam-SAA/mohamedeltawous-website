@@ -43,7 +43,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
   onAxesGenerated,
 }) => {
   const { data } = fullResponse;
-  const { company, setStep } = useScenarioStore();
+  const { company, setStep, addHistory } = useScenarioStore();
 
   if (!isOpen) return null;
 
@@ -172,7 +172,10 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
 
                 const response = await generateAxes(payload);
                 console.log("Successfully generated axes.");
+
                 if (response?.data) {
+                  addHistory("user", "Select axes.");
+                  addHistory("assistant", JSON.stringify(response.data));
                   onAxesGenerated(response.data);
                 }
                 onClose();

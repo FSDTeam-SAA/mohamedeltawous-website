@@ -17,6 +17,8 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
   company: { ...emptyCompany },
   forces: [],
   movingFactors: [],
+  axes: null,
+  conversationHistory: [],
 
   // Actions
   setStep: (step: number) => set({ currentStep: step }),
@@ -40,10 +42,6 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
         formatted: `${identifier} : ${description}`,
       };
       const updated = [...state.forces, newForce];
-      console.log(
-        "Forces updated:",
-        updated.map((f) => f.formatted),
-      );
       return { forces: updated };
     }),
 
@@ -54,11 +52,20 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
 
   updateMovingFactors: (factors) => set({ movingFactors: factors }),
 
+  updateAxes: (axes) => set({ axes }),
+
+  addHistory: (role, content) =>
+    set((state) => ({
+      conversationHistory: [...state.conversationHistory, { role, content }],
+    })),
+
   resetStore: () =>
     set({
       currentStep: 1,
       company: { ...emptyCompany },
       forces: [],
       movingFactors: [],
+      axes: null,
+      conversationHistory: [],
     }),
 }));
