@@ -3,6 +3,7 @@ import {
   classifyWorkshop,
   generateAxes,
   generateMatrix,
+  generateScenarios,
 } from "../api/newScenario.api";
 import {
   AxesPayload,
@@ -11,6 +12,8 @@ import {
   ClassifyResponse,
   MatrixPayload,
   MatrixResponse,
+  ScenariosPayload,
+  ScenariosResponse,
 } from "../types/newScenario.types";
 
 // POST /workshop/classify
@@ -34,5 +37,13 @@ export const useGenerateAxes = () => {
 export const useGenerateMatrix = () => {
   return useMutation<MatrixResponse, Error, MatrixPayload>({
     mutationFn: (data: MatrixPayload) => generateMatrix(data),
+  });
+};
+
+// POST /workshop/scenarios
+
+export const useGenerateScenarios = () => {
+  return useMutation<ScenariosResponse, Error, ScenariosPayload>({
+    mutationFn: (data: ScenariosPayload) => generateScenarios(data),
   });
 };

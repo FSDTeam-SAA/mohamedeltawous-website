@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { X, Layers, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { X, Layers, Loader2, ArrowRight } from "lucide-react";
 import { AxesData, MatrixData } from "../types/newScenario.types";
-import { useGenerateMatrix } from "../hooks/useNewScenario";
+import { useGenerateScenarios } from "../hooks/useNewScenario";
 import { useScenarioStore } from "../store/useScenarioStore";
 import StrategicMatrixChart from "./StrategicMatrixChart";
 
@@ -11,7 +11,6 @@ interface ScenarioAxesModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: AxesData;
-  projectName: string;
   onMatrixGenerated: (data: MatrixData) => void;
 }
 
@@ -19,12 +18,11 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
   isOpen,
   onClose,
   data: axesData,
-  projectName,
   onMatrixGenerated,
 }) => {
-  const { company, setStep } = useScenarioStore();
-  const { mutateAsync: generateMatrix, isPending: isGenerating } =
-    useGenerateMatrix();
+  const { company, setStep, forces, conversationHistory } = useScenarioStore();
+  const { mutateAsync: generateScenarios, isPending: isGenerating } =
+    useGenerateScenarios();
 
   if (!isOpen) return null;
 
@@ -124,22 +122,45 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
               onClick={async () => {
                 try {
                   const payload = {
-                    company,
-                    axes: axesData,
-                    conversationHistory: [], // Can be expanded to include actual history from previous steps
+                    company: {
+                      name: company.name,
+                      industry: company.industry,
+                      summary: company.companySummary,
+                      focalQuestion: company.focalQuestion,
+                      horizonYear: company.horizonYear,
+                    },
+                    axes: {
+                      axisA: {
+                        label: axesData.axisA.label,
+                        poleA1: axesData.axisA.pole1 || "",
+                        poleA2: axesData.axisA.pole2 || "",
+                      },
+                      axisB: {
+                        label: axesData.axisB.label,
+                        poleB1: axesData.axisB.pole1 || "",
+                        poleB2: axesData.axisB.pole2 || "",
+                      },
+                    },
+                    forces: forces.map((f) => f.title || f.category),
+                    conversationHistory: conversationHistory,
                   };
 
-                  const response = await generateMatrix(payload);
-                  onMatrixGenerated(response.data);
-                  onClose();
-                  setStep(4);
+                  console.log("Generating Scenarios with Payload:", payload);
+                  const response = await generateScenarios(payload);
+                  console.log("Scenario Generation Response:", response);
+
+                  if (response?.data) {
+                    onMatrixGenerated(response.data);
+                    onClose();
+                    setStep(4);
+                  }
                 } catch (err) {
-                  console.error("Matrix generation failed:", err);
+                  console.error("Scenario generation failed:", err);
                 }
               }}
               className="flex-1 sm:flex-none px-10 py-4 rounded-2xl text-sm font-black bg-[#0F172A] text-white flex items-center justify-center gap-3 hover:shadow-[0_20px_40px_rgba(15,23,42,0.3)] hover:-translate-y-1 transition-all active:scale-95 group disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
             >
-              Advance to Matrix
+              {isGenerating ? "Generating Scenarios..." : "Advance to Matrix"}
               {isGenerating ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (

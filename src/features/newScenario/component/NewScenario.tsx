@@ -47,6 +47,8 @@ export default function NewScenario() {
     setStep,
     movingFactors,
     updateMovingFactors,
+    addHistory,
+    updateAxes,
   } = useScenarioStore();
 
   const { mutateAsync: classifyWorker, isPending: isClassifying } =
@@ -650,6 +652,10 @@ export default function NewScenario() {
                     console.log("Successfully submitted data to API.");
 
                     if (response?.data) {
+                      // Update History
+                      addHistory("user", "Classify forces.");
+                      addHistory("assistant", JSON.stringify(response.data));
+
                       setClassificationData(response);
                       setIsClassificationModalOpen(true);
                     }
@@ -687,6 +693,8 @@ export default function NewScenario() {
             generateAxes={generateAxes}
             isGeneratingAxes={isGeneratingAxes}
             onAxesGenerated={(data) => {
+              // History for "Select axes" is handled inside ForceClassificationModal
+              updateAxes(data); // Save to store
               setAxesData(data);
               setIsAxesModalOpen(true);
             }}
@@ -698,7 +706,6 @@ export default function NewScenario() {
             isOpen={isAxesModalOpen}
             onClose={() => setIsAxesModalOpen(false)}
             data={axesData}
-            projectName={company.projectTitle || company.name}
             onMatrixGenerated={(data) => {
               setMatrixData(data);
             }}
