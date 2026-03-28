@@ -9,6 +9,7 @@ const emptyCompany = {
   industry: "",
   focalQuestion: "",
   companySummary: "",
+  horizonYear: "2030",
 };
 
 export const useScenarioStore = create<ScenarioState>((set) => ({
