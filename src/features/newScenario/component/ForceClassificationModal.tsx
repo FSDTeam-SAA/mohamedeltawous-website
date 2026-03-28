@@ -8,20 +8,43 @@ import {
   ArrowRight,
   BarChart3,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
-import { ClassifyResponse, ForceItem } from "../types/newScenario.types";
+import {
+  AxesPayload,
+  AxesResponse,
+  AxesData,
+  ClassifyResponse,
+  ForceItem,
+} from "../types/newScenario.types";
+import { useScenarioStore } from "../store/useScenarioStore";
+import { UseMutateAsyncFunction } from "@tanstack/react-query";
 
 interface ForceClassificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  data: ClassifyResponse["data"];
+  fullResponse: ClassifyResponse;
+  generateAxes: UseMutateAsyncFunction<
+    AxesResponse,
+    Error,
+    AxesPayload,
+    unknown
+  >;
+  isGeneratingAxes: boolean;
+  onAxesGenerated: (data: AxesData) => void;
 }
 
 const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
   isOpen,
   onClose,
-  data,
+  fullResponse,
+  generateAxes,
+  isGeneratingAxes: isPending,
+  onAxesGenerated,
 }) => {
+  const { data } = fullResponse;
+  const { company, setStep } = useScenarioStore();
+
   if (!isOpen) return null;
 
   const predeterminedCount = data.predetermined.length;
@@ -31,10 +54,15 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[#0F172A]/80 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-[#0F172A]/80 backdrop-blur-sm transition-opacity cursor-default"
         onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" || e.key === "Enter") {
+            onClose();
+          }
+        }}
         role="button"
-        tabIndex={-1}
+        tabIndex={0}
         aria-label="Close modal"
       />
 
@@ -121,19 +149,51 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
         <footer className="px-8 py-6 border-t border-slate-100 bg-white flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-6 py-3 rounded-xl text-sm font-bold text-[#0F172A] hover:bg-slate-50 transition-all active:scale-95"
+            disabled={isPending}
+            className="px-6 py-3 rounded-xl text-sm font-bold text-[#0F172A] hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Close
           </button>
           <button
-            onClick={() => {
-              onClose();
-              // In the future, this could trigger step 4 navigation
+            disabled={isPending}
+            onClick={async () => {
+              try {
+                const payload = {
+                  company: {
+                    name: company.name,
+                    industry: company.industry,
+                    summary: company.companySummary,
+                    focalQuestion: company.focalQuestion,
+                    horizonYear: company.horizonYear,
+                  },
+                  classification: fullResponse.data,
+                  conversationHistory: fullResponse.history,
+                };
+
+                const response = await generateAxes(payload);
+                console.log("Successfully generated axes.");
+                if (response?.data) {
+                  onAxesGenerated(response.data);
+                }
+                onClose();
+                setStep(4);
+              } catch (err) {
+                console.error("Axes generation failed:", err);
+              }
             }}
-            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
+            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center"
           >
-            Continue to Matrix
-            <ArrowRight className="w-4 h-4" />
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                Continue to Matrix
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </footer>
       </div>
