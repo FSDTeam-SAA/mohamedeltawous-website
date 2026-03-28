@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useScenarioStore } from "../store/useScenarioStore";
-import { useClassifyWorkshop } from "../hooks/useNewScenario";
+import { useClassifyWorkshop, useGenerateAxes } from "../hooks/useNewScenario";
 import ForceClassificationModal from "./ForceClassificationModal";
-import { ClassifyResponse } from "../types/newScenario.types";
+import ScenarioAxesModal from "./ScenarioAxesModal";
+import ScenarioMatrixView from "./ScenarioMatrixView";
+import {
+  AxesData,
+  ClassifyResponse,
+  MatrixData,
+} from "../types/newScenario.types";
 import {
   Check,
   Sparkles,
@@ -16,6 +22,7 @@ import {
   Globe,
   Search,
   Zap,
+  Loader2,
 } from "lucide-react";
 
 const PREDEFINED_CATEGORIES = [
@@ -42,16 +49,23 @@ export default function NewScenario() {
     updateMovingFactors,
   } = useScenarioStore();
 
-  const { mutateAsync: classifyWorker } = useClassifyWorkshop();
+  const { mutateAsync: classifyWorker, isPending: isClassifying } =
+    useClassifyWorkshop();
+  const { mutateAsync: generateAxes, isPending: isGeneratingAxes } =
+    useGenerateAxes();
 
   const [dfError, setDfError] = useState("");
   const [customCatInput, setCustomCatInput] = useState("");
 
   const [isClassificationModalOpen, setIsClassificationModalOpen] =
     useState(false);
-  const [classificationData, setClassificationData] = useState<
-    ClassifyResponse["data"] | null
-  >(null);
+  const [classificationData, setClassificationData] =
+    useState<ClassifyResponse | null>(null);
+
+  const [isAxesModalOpen, setIsAxesModalOpen] = useState(false);
+  const [axesData, setAxesData] = useState<AxesData | null>(null);
+
+  const [matrixData, setMatrixData] = useState<MatrixData | null>(null);
 
   const handleToggleCategory = (cat: string) => {
     const exists = movingFactors.find(
@@ -364,6 +378,35 @@ export default function NewScenario() {
                   </div>
                 </div>
               </div>
+
+              {/* Horizon Year */}
+              <div>
+                <label
+                  htmlFor="horizonYear"
+                  className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block"
+                >
+                  Scenario Horizon (Year)
+                </label>
+                <div className="flex gap-3">
+                  {["2030", "2035", "2040", "2045", "2050"].map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => updateCompany({ horizonYear: year })}
+                      className={`
+                        flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all
+                        ${
+                          company.horizonYear === year
+                            ? "bg-[#0F172A] border-[#0F172A] text-white shadow-lg"
+                            : "bg-white border-slate-100 text-slate-500 hover:border-slate-200"
+                        }
+                      `}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Buttons */}
@@ -607,7 +650,7 @@ export default function NewScenario() {
                     console.log("Successfully submitted data to API.");
 
                     if (response?.data) {
-                      setClassificationData(response.data);
+                      setClassificationData(response);
                       setIsClassificationModalOpen(true);
                     }
                   } catch (err) {
@@ -617,10 +660,20 @@ export default function NewScenario() {
                     );
                   }
                 }}
-                className="bg-[#0F172A] text-white px-10 py-4 rounded-xl font-bold flex items-center gap-2 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 shadow-lg shadow-blue-900/10 cursor-pointer"
+                disabled={isClassifying}
+                className="bg-[#0F172A] text-white px-10 py-4 rounded-xl font-bold flex items-center gap-2 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 shadow-lg shadow-blue-900/10 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Add Moving Factors
-                <Zap className="w-5 h-5" />
+                {isClassifying ? (
+                  <>
+                    Processing...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Add Moving Factors
+                    <Zap className="w-5 h-5" />
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -630,32 +683,47 @@ export default function NewScenario() {
           <ForceClassificationModal
             isOpen={isClassificationModalOpen}
             onClose={() => setIsClassificationModalOpen(false)}
-            data={classificationData}
+            fullResponse={classificationData}
+            generateAxes={generateAxes}
+            isGeneratingAxes={isGeneratingAxes}
+            onAxesGenerated={(data) => {
+              setAxesData(data);
+              setIsAxesModalOpen(true);
+            }}
           />
         )}
-        {/* Step 4 Placeholder */}
-        {currentStep === 4 && (
-          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-16 text-center border border-slate-100">
+        {/* Scenario Axes Modal */}
+        {axesData && (
+          <ScenarioAxesModal
+            isOpen={isAxesModalOpen}
+            onClose={() => setIsAxesModalOpen(false)}
+            data={axesData}
+            projectName={company.projectTitle || company.name}
+            onMatrixGenerated={(data) => {
+              setMatrixData(data);
+            }}
+          />
+        )}
+        {/* Step 4: Scenario Matrix View */}
+        {currentStep === 4 && matrixData && axesData && (
+          <ScenarioMatrixView
+            matrix={matrixData}
+            axisA={axesData.axisA}
+            axisB={axesData.axisB}
+          />
+        )}
+        {!matrixData && currentStep === 4 && (
+          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-20 text-center border border-slate-100 animate-pulse">
             <div className="w-20 h-20 rounded-3xl bg-[#DEF0FA] flex items-center justify-center mx-auto mb-8 shadow-sm">
-              <Globe className="w-10 h-10 text-[#0F172A]" />
+              <Sparkles className="w-10 h-10 text-[#0F172A]" />
             </div>
             <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter">
-              Scenario Matrix
+              Synthesizing Strategic Worlds
             </h2>
             <p className="text-slate-500 mt-4 max-w-md mx-auto font-medium leading-relaxed">
               We&apos;re processing your inputs to build the final scenario
               matrix. This core framework will define your strategic horizons.
             </p>
-            <div className="mt-12">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="bg-slate-100 text-[#0F172A] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-200 transition-all mx-auto active:scale-95"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Back to Moving Factors
-              </button>
-            </div>
           </div>
         )}
       </div>
