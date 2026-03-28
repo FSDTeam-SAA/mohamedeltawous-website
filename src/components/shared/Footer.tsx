@@ -3,14 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LinkedinIcon, Twitter, Instagram } from "lucide-react";
-import { FaXTwitter } from "react-icons/fa6";
+// import { FaXTwitter } from "react-icons/fa6";
 
 export default function Footer() {
   return (
     <footer className="bg-secondary pt-16 pb-8">
       <div className="container mx-auto px-6">
         {/* Top */}
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-6">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Left */}
           <div className="lg:col-span-2">
             <Link href="/">
@@ -34,9 +34,9 @@ export default function Footer() {
               <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <LinkedinIcon size={14} className="text-white" />
               </a>
-              <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
+              {/* <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <FaXTwitter size={14} className="text-white" />
-              </a>
+              </a> */}
               <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <Instagram size={14} className="text-white" />
               </a>
@@ -44,7 +44,7 @@ export default function Footer() {
           </div>
 
           {/* Product */}
-          <div>
+          {/* <div>
             <h3 className="font-semibold text-[#1f2937]">Product</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
               <li>
@@ -60,10 +60,10 @@ export default function Footer() {
                 <Link href="/reporting">Reporting</Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Platform */}
-          <div>
+          {/* <div>
             <h3 className="font-semibold text-[#1f2937]">Platform</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
               <li>
@@ -79,7 +79,7 @@ export default function Footer() {
                 <Link href="/docs">Documentation</Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Resources */}
           <div>
@@ -104,18 +104,18 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-[#1f2937]">Contact</h3>
             <ul className="mt-4 space-y-2 text-sm text-[#5f6b7a]">
-              <li>
+              {/* <li>
                 <Link href="/contact">Sales</Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/support">Support</Link>
               </li>
               <li>
                 <Link href="/partners">Partners</Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/legal">Legal</Link>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

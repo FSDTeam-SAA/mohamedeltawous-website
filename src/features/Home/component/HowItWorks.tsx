@@ -18,7 +18,7 @@ const steps = [
   },
   {
     icon: Target,
-    title: "Identify Forces",
+    title: "Strideeper Analysis",
     desc: "Input your strategic core inquiry",
     tooltip:
       "Identify key external factors (PEST) that could impact your strategy and future outcomes.",
