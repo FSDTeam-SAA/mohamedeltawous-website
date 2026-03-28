@@ -158,12 +158,48 @@ export interface ScenariosResponse {
   };
 }
 
+export interface WindtunnelPayload {
+  company: {
+    name: string;
+    focalQuestion: string;
+    horizonYear: string;
+  };
+  scenarios: ScenarioResult[];
+  strategicOptions: string[];
+  conversationHistory: { role: string; content: string }[];
+}
+
+export interface WindtunnelCell {
+  rating: string;
+  reasoning: string;
+}
+
+export interface RobustMoves {
+  noRegret: string[];
+  keepOpen: string[];
+  defer: string[];
+}
+
+export interface WindtunnelResult {
+  windTunnel: WindtunnelCell[][];
+  robustMoves: RobustMoves;
+  strategicConclusion: string;
+  recommendedOption: string;
+}
+
+export interface WindtunnelResponse {
+  success: boolean;
+  data: WindtunnelResult;
+}
+
 export interface ScenarioState {
   currentStep: number;
   company: CompanyInfo;
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
   axes: AxesData | null;
+  strategicOptions: string[];
+  windtunnelData: WindtunnelResult | null;
   conversationHistory: { role: "user" | "assistant"; content: string }[];
 
   // Actions
@@ -173,6 +209,8 @@ export interface ScenarioState {
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
   updateAxes: (axes: AxesData) => void;
+  updateStrategicOptions: (options: string[]) => void;
+  setWindtunnelData: (data: WindtunnelResult) => void;
   addHistory: (role: "user" | "assistant", content: string) => void;
   resetStore: () => void;
 }

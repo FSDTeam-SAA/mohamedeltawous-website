@@ -11,6 +11,8 @@ import {
   MatrixResponse,
   ScenariosPayload,
   ScenariosResponse,
+  WindtunnelPayload,
+  WindtunnelResponse,
 } from "../types/newScenario.types";
 
 // POST /workshop/classify
@@ -61,6 +63,21 @@ export const generateScenarios = async (
 ): Promise<ScenariosResponse> => {
   try {
     const response = await axiosInstance.post(`/workshop/scenarios`, data, {
+      timeout: 180000, // 3 minutes timeout
+    });
+    return response.data;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+// POST /workshop/windtunnel
+
+export const postWindtunnel = async (
+  data: WindtunnelPayload,
+): Promise<WindtunnelResponse> => {
+  try {
+    const response = await axiosInstance.post(`/workshop/windtunnel`, data, {
       timeout: 180000, // 3 minutes timeout
     });
     return response.data;

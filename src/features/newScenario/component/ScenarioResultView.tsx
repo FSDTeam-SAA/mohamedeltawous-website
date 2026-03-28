@@ -8,13 +8,18 @@ import {
   AlertCircle,
   ArrowRight,
   Loader2,
+  CheckCircle2,
   Search,
   X,
   Plus,
+  Check,
 } from "lucide-react";
 import { useScenarioStore } from "../store/useScenarioStore";
-import { useGenerateScenarios } from "../hooks/useNewScenario";
-import { ScenarioResult } from "../types/newScenario.types";
+import {
+  useGenerateScenarios,
+  usePostWindtunnel,
+} from "../hooks/useNewScenario";
+import { ScenarioResult, WindtunnelPayload } from "../types/newScenario.types";
 
 /**
  * Helper to truncate text to exactly N words.
@@ -29,12 +34,24 @@ const truncateText = (text: string, limit: number) => {
 };
 
 const ScenarioResultView: React.FC = () => {
-  const { company, axes, forces, conversationHistory } = useScenarioStore();
+  const {
+    company,
+    axes,
+    forces,
+    conversationHistory,
+    strategicOptions,
+    setWindtunnelData,
+    addHistory,
+    setStep,
+  } = useScenarioStore();
   const {
     mutateAsync: generateScenarios,
     isPending,
     error,
   } = useGenerateScenarios();
+
+  const { mutateAsync: postWindtunnel, isPending: isFinalizing } =
+    usePostWindtunnel();
 
   const [scenarios, setScenarios] = useState<ScenarioResult[]>([]);
   const [activeTabs, setActiveTabs] = useState<Record<number, string>>({});
@@ -42,22 +59,53 @@ const ScenarioResultView: React.FC = () => {
   // Modal State
   const [modalData, setModalData] = useState<{
     isOpen: boolean;
-    title: string;
-    content: string;
-    type: string;
+    scenario: ScenarioResult | null;
+    scenarioLetter: string;
   }>({
     isOpen: false,
-    title: "",
-    content: "",
-    type: "narrative",
+    scenario: null,
+    scenarioLetter: "",
   });
 
-  const openModal = (title: string, content: string, type: string) => {
-    setModalData({ isOpen: true, title, content, type });
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({});
+
+  const openModal = (scenario: ScenarioResult, letter: string) => {
+    setModalData({ isOpen: true, scenario, scenarioLetter: letter });
+    setExpandedSections({}); // Reset expanded state on new modal open
   };
 
   const closeModal = () => {
     setModalData({ ...modalData, isOpen: false });
+  };
+
+  const handleFinalize = async () => {
+    const payload: WindtunnelPayload = {
+      company: {
+        name: company.name,
+        focalQuestion: company.focalQuestion,
+        horizonYear: company.horizonYear,
+      },
+      scenarios,
+      strategicOptions,
+      conversationHistory,
+    };
+
+    console.log("Finalizing Workshop - Payload:", payload);
+
+    try {
+      const response = await postWindtunnel(payload);
+      console.log("Finalization Success - Response:", response);
+      if (response?.success && response?.data) {
+        setWindtunnelData(response.data);
+        addHistory("user", "Run wind tunnel.");
+        addHistory("assistant", JSON.stringify(response.data));
+        setStep(5);
+      }
+    } catch (err) {
+      console.error("Finalization Failed - Error:", err);
+    }
   };
 
   useEffect(() => {
@@ -204,6 +252,28 @@ const ScenarioResultView: React.FC = () => {
             {axes?.axisB.label}.
           </p>
         </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleFinalize}
+            disabled={isFinalizing || scenarios.length === 0}
+            className={`
+              px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center gap-3 transition-all duration-300
+              ${
+                isFinalizing || scenarios.length === 0
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-[#0F172A] text-white hover:shadow-2xl hover:-translate-y-1 active:scale-95 cursor-pointer"
+              }
+            `}
+          >
+            {isFinalizing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Check className="w-5 h-5" />
+            )}
+            Continue to Finalize
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-4 items-start">
@@ -271,11 +341,7 @@ const ScenarioResultView: React.FC = () => {
                       {truncateText(s.story, 50).needsMore && (
                         <button
                           onClick={() =>
-                            openModal(
-                              `Scenario ${String.fromCodePoint(65 + idx)}: Full Narrative`,
-                              s.story,
-                              "narrative",
-                            )
+                            openModal(s, String.fromCodePoint(65 + idx))
                           }
                           className={`mt-4 w-fit flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${color.text} hover:opacity-70 transition-all cursor-pointer`}
                         >
@@ -299,11 +365,7 @@ const ScenarioResultView: React.FC = () => {
                       {truncateText(s.implications, 50).needsMore && (
                         <button
                           onClick={() =>
-                            openModal(
-                              `Scenario ${String.fromCodePoint(65 + idx)}: Strategic Implications`,
-                              s.implications,
-                              "implications",
-                            )
+                            openModal(s, String.fromCodePoint(65 + idx))
                           }
                           className={`mt-4 w-fit flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${color.text} hover:opacity-70 transition-all cursor-pointer`}
                         >
@@ -342,64 +404,157 @@ const ScenarioResultView: React.FC = () => {
       </div>
 
       {/* Full Text Modal */}
-      {modalData.isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      {modalData.isOpen && modalData.scenario && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 lg:p-8 overflow-hidden">
           {/* Overlay */}
           <button
             type="button"
             aria-label="Close modal"
-            className="absolute inset-0 w-full h-full bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300 cursor-default border-none outline-none"
+            className="absolute inset-0 w-full h-full bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-500 cursor-default border-none outline-none"
             onClick={closeModal}
           />
 
           {/* Modal Content */}
-          <div className="relative bg-white w-full max-w-3xl max-h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 flex flex-col">
+          <div className="relative bg-white w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(15,23,42,0.15)] overflow-hidden animate-in zoom-in-95 fade-in duration-500 flex flex-col border border-slate-100">
             {/* Modal Header */}
-            <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-              <div>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
-                  Scenario deep-dive
-                </span>
-                <h3 className="text-xl font-black text-[#0F172A] tracking-tight">
-                  {modalData.title}
-                </h3>
+            <div className="px-8 py-8 border-b border-slate-50 flex items-center justify-between bg-white/80 sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shadow-inner border border-blue-100">
+                  <Sparkles className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 block">
+                    Scenario Case Study • {modalData.scenarioLetter}
+                  </span>
+                  <h3 className="text-2xl font-black text-[#0F172A] tracking-tighter leading-none">
+                    {modalData.scenario.name}
+                  </h3>
+                </div>
               </div>
               <button
                 onClick={closeModal}
-                className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 hover:text-[#0F172A] hover:shadow-md transition-all active:scale-95"
+                className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#0F172A] hover:bg-slate-100 transition-all active:scale-95 group"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="px-10 py-10 overflow-y-auto flex-1 custom-scrollbar">
-              {modalData.type === "narrative" ? (
-                <p className="text-slate-600 text-base leading-relaxed font-medium whitespace-pre-line text-justify italic border-l-4 border-blue-500 pl-8">
-                  {modalData.content}
-                </p>
-              ) : (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 text-blue-600">
-                    <Target className="w-5 h-5" />
-                    <span className="text-xs font-black uppercase tracking-widest">
-                      Calculated Impacts
-                    </span>
-                  </div>
-                  <p className="text-slate-700 text-base leading-relaxed font-semibold whitespace-pre-line bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
-                    {modalData.content}
-                  </p>
+            <div className="px-8 py-8 overflow-y-auto flex-1 custom-scrollbar space-y-10">
+              {/* SECTION: STORY */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
+                  <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-widest">
+                    The Narrative
+                  </h4>
                 </div>
-              )}
+                <div className="relative group">
+                  <p
+                    className={`text-slate-600 text-base leading-relaxed font-medium text-justify italic border-l-4 border-slate-100 pl-8 transition-all duration-500 ${!expandedSections["story"] ? "line-clamp-[5]" : ""}`}
+                  >
+                    {modalData.scenario.story}
+                  </p>
+                  {!expandedSections["story"] &&
+                    truncateText(modalData.scenario.story, 40).needsMore && (
+                      <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                    )}
+                </div>
+                {truncateText(modalData.scenario.story, 40).needsMore && (
+                  <button
+                    onClick={() =>
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        story: !prev.story,
+                      }))
+                    }
+                    className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition-colors"
+                  >
+                    {expandedSections["story"]
+                      ? "Show Less"
+                      : "See Full Narrative"}
+                    <ArrowRight
+                      className={`w-3 h-3 transition-transform ${expandedSections["story"] ? "-rotate-90" : ""}`}
+                    />
+                  </button>
+                )}
+              </section>
+
+              {/* SECTION: IMPLICATIONS */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                  <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-widest">
+                    Strategic Implications
+                  </h4>
+                </div>
+                <div className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Target className="w-12 h-12 text-[#0F172A]" />
+                  </div>
+                  <p
+                    className={`text-slate-700 text-sm leading-relaxed font-semibold transition-all duration-500 ${!expandedSections["implications"] ? "line-clamp-4" : ""}`}
+                  >
+                    {modalData.scenario.implications}
+                  </p>
+                  {truncateText(modalData.scenario.implications, 40)
+                    .needsMore && (
+                    <button
+                      onClick={() =>
+                        setExpandedSections((prev) => ({
+                          ...prev,
+                          implications: !prev.implications,
+                        }))
+                      }
+                      className="mt-6 flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-800 transition-colors"
+                    >
+                      {expandedSections["implications"]
+                        ? "Show Less"
+                        : "See Full Implications"}
+                      <ArrowRight
+                        className={`w-3 h-3 transition-transform ${expandedSections["implications"] ? "-rotate-90" : ""}`}
+                      />
+                    </button>
+                  )}
+                </div>
+              </section>
+
+              {/* SECTION: SIGNPOSTS */}
+              <section className="space-y-4 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-amber-500 rounded-full" />
+                  <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-widest">
+                    Critical Signposts
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {modalData.scenario.signposts.map((post, pIdx) => (
+                    <div
+                      key={pIdx}
+                      className="flex gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-colors group/item"
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 group-hover/item:bg-blue-50 transition-colors">
+                        <Search className="w-4 h-4 text-slate-400 group-hover/item:text-blue-600" />
+                      </div>
+                      <span className="text-sm font-medium text-slate-600 leading-relaxed">
+                        {post}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-10 py-6 bg-slate-50/50 border-t border-slate-50 flex justify-end">
+            <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50 flex justify-between items-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Professional Strategic Analysis
+              </span>
               <button
                 onClick={closeModal}
-                className="px-8 py-3 bg-[#0F172A] text-white rounded-xl font-bold text-sm hover:shadow-lg cursor-pointer transition-all active:scale-95"
+                className="px-10 py-3.5 bg-[#0F172A] text-white rounded-xl font-bold text-sm hover:shadow-2xl hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer shadow-lg shadow-blue-900/10"
               >
-                Close Detail
+                Dismiss Case Study
               </button>
             </div>
           </div>

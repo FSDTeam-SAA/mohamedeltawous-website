@@ -7,6 +7,7 @@ import ForceClassificationModal from "./ForceClassificationModal";
 import ScenarioAxesModal from "./ScenarioAxesModal";
 import { AxesData, ClassifyResponse } from "../types/newScenario.types";
 import ScenarioResultView from "./ScenarioResultView";
+import ScenarioMatrixView from "./ScenarioMatrixView";
 import {
   Check,
   Plus,
@@ -134,7 +135,8 @@ export default function NewScenario() {
     { label: "Strategic Question", icon: Search },
     { label: "Company Profile", icon: Building2 },
     { label: "Moving Factors", icon: Zap },
-    { label: "Scenario Matrix", icon: Globe },
+    { label: "Scenario Discovery", icon: Globe },
+    { label: "Scenario Matrix", icon: CheckCircle2 },
   ];
 
   return (
@@ -707,6 +709,8 @@ export default function NewScenario() {
         )}
         {/* Step 4: Scenario Results Deep Dive */}
         {currentStep === 4 && <ScenarioResultView />}
+        {/* Step 5: Strategic Wind Tunnel (Scenario Matrix) */}
+        {currentStep === 5 && <ScenarioMatrixView />}
       </div>
     </section>
   );
