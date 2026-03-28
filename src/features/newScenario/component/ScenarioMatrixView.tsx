@@ -44,7 +44,7 @@ const ScenarioMatrixView: React.FC<ScenarioMatrixViewProps> = ({
     },
   ];
 
-  const stripPole = (text: string) => text.split("(")[0].trim();
+  const stripPole = (text?: string) => (text ? text.split("(")[0].trim() : "");
 
   return (
     <div className="w-full py-20 px-4 bg-white min-h-screen font-sans">
