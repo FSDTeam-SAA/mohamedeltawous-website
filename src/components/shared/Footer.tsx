@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LinkedinIcon, Twitter, Instagram } from "lucide-react";
+import { FaXTwitter } from "react-icons/fa6";
 
 export default function Footer() {
   return (
@@ -34,7 +35,7 @@ export default function Footer() {
                 <LinkedinIcon size={14} className="text-white" />
               </a>
               <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
-                <Twitter size={14} className="text-white" />
+                <FaXTwitter size={14} className="text-white" />
               </a>
               <a href="#" className="p-2 bg-[#0B1533] rounded hover:opacity-80">
                 <Instagram size={14} className="text-white" />
@@ -119,8 +120,15 @@ export default function Footer() {
           </div>
         </div>
 
+        <div className="text-center">
+          <p className="text-sm text-gray-600 max-w-2xl mx-auto">
+            <strong>Privacy Notice:</strong> Second Sight does not store or
+            retain any user-provided information. All data is processed in
+            real-time and is not saved, shared, or used in any form.
+          </p>
+        </div>
         {/* Bottom */}
-        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-[#c9d8e3] pt-6">
+        <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-[#c9d8e3] pt-6">
           <p className="text-sm text-[#5f6b7a]">
             © {new Date().getFullYear()} SECOND SIGHT AI Platform. All rights
             reserved.
