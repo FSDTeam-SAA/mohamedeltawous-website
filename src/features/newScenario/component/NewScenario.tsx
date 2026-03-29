@@ -46,6 +46,7 @@ export default function NewScenario() {
     updateMovingFactors,
     addHistory,
     updateAxes,
+    setClassification,
   } = useScenarioStore();
 
   const { mutateAsync: classifyWorker, isPending: isClassifying } =
@@ -106,10 +107,7 @@ export default function NewScenario() {
 
   const handleDescriptionChange = (cat: string, desc: string) => {
     let finalDesc = desc;
-    // If user starts typing the first character and it's not a bullet, prepend one
-    if (desc.length === 1 && desc !== "•" && desc !== " ") {
-      finalDesc = "• " + desc;
-    } else if (desc.length > 0 && !desc.startsWith("•")) {
+    if (desc.length > 0 && !desc.startsWith("•") && desc !== " ") {
       finalDesc = "• " + desc;
     }
 
@@ -128,7 +126,6 @@ export default function NewScenario() {
       const textarea = e.currentTarget;
       const { selectionStart, selectionEnd, value } = textarea;
 
-      // Insert newline and bullet at cursor position
       const newValue =
         value.substring(0, selectionStart) +
         "\n• " +
@@ -136,7 +133,6 @@ export default function NewScenario() {
 
       handleDescriptionChange(cat, newValue);
 
-      // Set cursor position after the new bullet
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = selectionStart + 3;
       }, 0);
@@ -144,13 +140,6 @@ export default function NewScenario() {
   };
 
   const handleContinue = () => {
-    // Log stored data in the console
-    console.log(`Saving Step ${currentStep} Data to Zustand Store:`, {
-      currentStep,
-      company,
-    });
-
-    // Move to the next step
     setStep(currentStep + 1);
   };
 
@@ -174,20 +163,15 @@ export default function NewScenario() {
   return (
     <section className="bg-slate-50 min-h-screen py-20 px-4 font-sans">
       <div className="max-w-5xl mx-auto">
-        {/* Modern Stepper */}
         <div className="mb-16">
           <div className="flex justify-between items-center relative">
-            {/* Background Progress Line */}
             <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 z-0" />
-
-            {/* Active Progress Line */}
             <div
               className="absolute top-1/2 left-0 h-0.5 bg-[#0F172A] -translate-y-1/2 z-0 transition-all duration-500 ease-in-out"
               style={{
                 width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%`,
               }}
             />
-
             {STEPS.map((step, i) => {
               const stepNum = i + 1;
               const Icon = step.icon;
@@ -228,10 +212,8 @@ export default function NewScenario() {
             })}
           </div>
         </div>
-        {/* Card for Step 1 */}
         {currentStep === 1 && (
           <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-10 border border-slate-100">
-            {/* Title */}
             <header className="mb-8">
               <h2 className="text-2xl font-black text-[#0F172A] tracking-tight">
                 Define Your Strategic Question
@@ -243,7 +225,6 @@ export default function NewScenario() {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-              {/* Project Title */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="projectTitle"
@@ -266,7 +247,6 @@ export default function NewScenario() {
                 </p>
               </div>
 
-              {/* Company Name */}
               <div>
                 <label
                   htmlFor="companyName"
@@ -284,7 +264,6 @@ export default function NewScenario() {
                 />
               </div>
 
-              {/* Industry */}
               <div>
                 <label
                   htmlFor="industry"
@@ -302,7 +281,6 @@ export default function NewScenario() {
                 />
               </div>
 
-              {/* Strategic Question */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="focalQuestion"
@@ -327,7 +305,6 @@ export default function NewScenario() {
               </div>
             </div>
 
-            {/* AI Tip */}
             <div className="bg-[#ECFDF5] border border-emerald-100 rounded-4xl p-8 flex gap-6 items-start shadow-sm mt-10 mb-6">
               <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600" />
@@ -347,7 +324,6 @@ export default function NewScenario() {
               </div>
             </div>
 
-            {/* Buttons */}
             <div className="mt-10 flex justify-between items-center">
               <button
                 type="button"
@@ -369,7 +345,6 @@ export default function NewScenario() {
             </div>
           </div>
         )}
-        {/* Card for Step 2 - Company Profiling */}
         {currentStep === 2 && (
           <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-10 border border-slate-100">
             <header className="text-center max-w-2xl mx-auto mb-12">
@@ -383,7 +358,6 @@ export default function NewScenario() {
             </header>
 
             <div className="space-y-8">
-              {/* Company Summary */}
               <div>
                 <label
                   htmlFor="companySummary"
@@ -409,7 +383,6 @@ export default function NewScenario() {
                 </div>
               </div>
 
-              {/* Horizon Year */}
               <div>
                 <label
                   htmlFor="horizonYear"
@@ -686,6 +659,7 @@ export default function NewScenario() {
                       addHistory("user", "Classify forces.");
                       addHistory("assistant", JSON.stringify(response.data));
 
+                      setClassification(response.data);
                       setClassificationData(response);
                       setIsClassificationModalOpen(true);
                     }

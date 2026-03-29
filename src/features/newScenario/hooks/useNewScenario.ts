@@ -5,6 +5,7 @@ import {
   generateMatrix,
   generateScenarios,
   postWindtunnel,
+  exportReport,
 } from "../api/newScenario.api";
 import {
   AxesPayload,
@@ -17,6 +18,8 @@ import {
   ScenariosResponse,
   WindtunnelPayload,
   WindtunnelResponse,
+  ReportPayload,
+  ReportResponse,
 } from "../types/newScenario.types";
 
 // POST /workshop/classify
@@ -56,5 +59,13 @@ export const useGenerateScenarios = () => {
 export const usePostWindtunnel = () => {
   return useMutation<WindtunnelResponse, Error, WindtunnelPayload>({
     mutationFn: (data: WindtunnelPayload) => postWindtunnel(data),
+  });
+};
+
+// POST /workshop/report
+
+export const useExportReport = () => {
+  return useMutation<ReportResponse, Error, ReportPayload>({
+    mutationFn: (data: ReportPayload) => exportReport(data),
   });
 };

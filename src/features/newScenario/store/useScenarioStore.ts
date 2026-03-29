@@ -17,7 +17,9 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
   company: { ...emptyCompany },
   forces: [],
   movingFactors: [],
+  classification: null,
   axes: null,
+  scenarios: null,
   strategicOptions: [
     "Option A: Full digital platform build — invest AED 400M over five years to build a standalone retail digital wealth platform targeting the mass-affluent segment.",
     "Option B: Digitally enhanced relationship model — invest AED 120M in client-facing digital tools, AI-assisted advisor support, and improved reporting, while keeping the relationship model intact.",
@@ -57,9 +59,9 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
     })),
 
   updateMovingFactors: (factors) => set({ movingFactors: factors }),
-
+  setClassification: (data) => set({ classification: data }),
   updateAxes: (axes) => set({ axes }),
-
+  setScenarios: (scenarios) => set({ scenarios }),
   updateStrategicOptions: (options) => set({ strategicOptions: options }),
 
   setWindtunnelData: (data) => set({ windtunnelData: data }),
@@ -75,7 +77,9 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       company: { ...emptyCompany },
       forces: [],
       movingFactors: [],
+      classification: null,
       axes: null,
+      scenarios: null,
       strategicOptions: [
         "Option A: Full digital platform build — invest AED 400M over five years to build a standalone retail digital wealth platform targeting the mass-affluent segment.",
         "Option B: Digitally enhanced relationship model — invest AED 120M in client-facing digital tools, AI-assisted advisor support, and improved reporting, while keeping the relationship model intact.",
