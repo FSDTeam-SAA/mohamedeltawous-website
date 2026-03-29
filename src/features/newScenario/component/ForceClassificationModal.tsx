@@ -15,7 +15,7 @@ import {
   AxesResponse,
   AxesData,
   ClassifyResponse,
-  ForceItem,
+  UncertaintyItem,
 } from "../types/newScenario.types";
 import { useScenarioStore } from "../store/useScenarioStore";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
@@ -121,7 +121,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
 
             <div className="grid gap-4">
               {data.predetermined.map((item) => (
-                <ForceCard key={item.force} item={item} type="predetermined" />
+                <ForceCard key={item} item={item} type="predetermined" />
               ))}
             </div>
           </section>
@@ -205,12 +205,30 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
 };
 
 interface ForceCardProps {
-  item: ForceItem;
+  item: string | UncertaintyItem;
   type: "predetermined" | "uncertainty";
 }
 
 const ForceCard: React.FC<ForceCardProps> = ({ item, type }) => {
   const isUncertainty = type === "uncertainty";
+
+  let title = "";
+  let text = "";
+  let impact = "";
+
+  if (typeof item === "string") {
+    const colonIndex = item.indexOf(":");
+    if (colonIndex !== -1) {
+      title = item.slice(0, colonIndex).trim();
+      text = item.slice(colonIndex + 1).trim();
+    } else {
+      title = item;
+    }
+  } else {
+    title = item.force;
+    text = item.unpredictability;
+    impact = item.impact;
+  }
 
   return (
     <div
@@ -238,16 +256,18 @@ const ForceCard: React.FC<ForceCardProps> = ({ item, type }) => {
             {isUncertainty ? "Critical Uncertainty" : "Predetermined"}
           </span>
           <h4 className="text-xl font-black text-[#0F172A] tracking-tight mt-2">
-            {item.force}
+            {title}
           </h4>
         </div>
       </div>
 
-      <p className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-wrap">
-        {item.rationale}
-      </p>
+      {text && (
+        <p className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-wrap">
+          {text}
+        </p>
+      )}
 
-      {isUncertainty && item.impact && (
+      {isUncertainty && impact && (
         <div className="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-100 flex gap-3 items-start">
           <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
           <div>
@@ -255,7 +275,7 @@ const ForceCard: React.FC<ForceCardProps> = ({ item, type }) => {
               Probable Impact
             </span>
             <p className="text-xs text-slate-500 font-medium leading-normal italic">
-              {item.impact}
+              {impact}
             </p>
           </div>
         </div>

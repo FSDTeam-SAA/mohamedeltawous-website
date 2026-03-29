@@ -35,19 +35,19 @@ export interface ClassifyPayload {
   conversationHistory: unknown[]; // Using unknown[] for now as it's empty
 }
 
-export interface ForceItem {
+export interface UncertaintyItem {
   force: string;
-  rationale: string;
-  impact?: string;
+  impact: string;
+  unpredictability: string;
 }
 
 export interface ClassifyResponse {
   success: boolean;
   data: {
-    predetermined: ForceItem[];
-    uncertainties: ForceItem[];
+    predetermined: string[];
+    uncertainties: UncertaintyItem[];
   };
-  history: unknown[];
+  history: { role: string; content: string }[];
 }
 
 export interface AxesPayload {
@@ -59,10 +59,10 @@ export interface AxesPayload {
     horizonYear: string;
   };
   classification: {
-    predetermined: ForceItem[];
-    uncertainties: ForceItem[];
+    predetermined: string[];
+    uncertainties: UncertaintyItem[];
   };
-  conversationHistory: unknown[];
+  conversationHistory: { role: string; content: string }[];
 }
 
 export interface AxisResult {
@@ -202,8 +202,8 @@ export interface ReportPayload {
       horizonYear: string;
     };
     classification: {
-      predetermined: ForceItem[];
-      uncertainties: ForceItem[];
+      predetermined: string[];
+      uncertainties: UncertaintyItem[];
     };
     axes: {
       axisA: AxisResult;
@@ -218,7 +218,9 @@ export interface ReportPayload {
 
 export interface ReportResponse {
   success: boolean;
-  data?: unknown;
+  data?: {
+    fullReportMarkdown: string;
+  };
   message?: string;
 }
 
@@ -228,8 +230,8 @@ export interface ScenarioState {
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
   classification: {
-    predetermined: ForceItem[];
-    uncertainties: ForceItem[];
+    predetermined: string[];
+    uncertainties: UncertaintyItem[];
   } | null;
   axes: AxesData | null;
   scenarios: ScenarioResult[] | null;
@@ -244,8 +246,8 @@ export interface ScenarioState {
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
   setClassification: (data: {
-    predetermined: ForceItem[];
-    uncertainties: ForceItem[];
+    predetermined: string[];
+    uncertainties: UncertaintyItem[];
   }) => void;
   updateAxes: (axes: AxesData) => void;
   setScenarios: (scenarios: ScenarioResult[]) => void;
