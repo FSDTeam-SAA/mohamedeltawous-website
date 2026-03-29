@@ -18,10 +18,10 @@ const steps = [
   },
   {
     icon: Target,
-    title: "Strideeper Analysis",
+    title: "Moving Factors",
     desc: "Input your strategic core inquiry",
     tooltip:
-      "Identify key external factors (PEST) that could impact your strategy and future outcomes.",
+      "Identify key external factors Stirdeeper that could impact your strategy and future outcomes.",
   },
   {
     icon: Sparkles,
@@ -82,7 +82,7 @@ export default function HowItWorks() {
                 </h3>
 
                 {/* Description */}
-                <p className="mt-2 text-sm text-[#6b7280]">{item.desc}</p>
+                {/* <p className="mt-2 text-sm text-[#6b7280]">{item.desc}</p> */}
 
                 {/* Tooltip */}
                 <div className="absolute -top-24 w-64 rounded-lg bg-[#0B1533] text-white text-xs px-4 py-3 opacity-0 group-hover:opacity-100 transition duration-300 shadow-lg pointer-events-none">
