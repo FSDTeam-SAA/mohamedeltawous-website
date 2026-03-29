@@ -17,7 +17,10 @@ import {
   Download,
   X,
   Search,
+  Loader2,
 } from "lucide-react";
+import { useExportReport } from "../hooks/useNewScenario";
+import { ReportPayload } from "../types/newScenario.types";
 
 /**
  * Helper to truncate text to exactly N words.
@@ -31,13 +34,67 @@ const truncateText = (text: string, limit: number) => {
   };
 };
 
-/**
- * Strategic Wind Tunnel View (Step 5)
- * Visualizes the final analysis: Option-Scenario stress tests, robust moves, and key conclusions.
- */
 const ScenarioMatrixView: React.FC = () => {
-  const { windtunnelData, strategicOptions, axes, company, setStep } =
-    useScenarioStore();
+  const {
+    windtunnelData,
+    strategicOptions,
+    axes,
+    company,
+    setStep,
+    classification,
+    scenarios,
+  } = useScenarioStore();
+
+  const { mutateAsync: exportReport, isPending: isExporting } =
+    useExportReport();
+
+  const handleExport = async () => {
+    if (!axes || !classification || !scenarios || !windtunnelData) {
+      console.error("Missing workshop data for export.");
+      return;
+    }
+
+    const payload: ReportPayload = {
+      workshopState: {
+        company: {
+          name: company.name,
+          industry: company.industry,
+          summary: company.companySummary,
+          focalQuestion: company.focalQuestion,
+          horizonYear: company.horizonYear,
+        },
+        classification: {
+          predetermined: classification.predetermined,
+          uncertainties: classification.uncertainties,
+        },
+        axes: {
+          axisA: axes.axisA,
+          axisB: axes.axisB,
+        },
+        scenarios: {
+          scenarios: scenarios,
+        },
+        windTunnelResult: {
+          windTunnel: windtunnelData.windTunnel,
+          robustMoves: windtunnelData.robustMoves,
+          strategicConclusion: windtunnelData.strategicConclusion,
+          recommendedOption: windtunnelData.recommendedOption,
+        },
+      },
+    };
+
+    console.log("Triggering Export Report with payload:", payload);
+
+    try {
+      const response = await exportReport(payload);
+      if (response.success) {
+        console.log("Report exported successfully:", response);
+        // You could add a toast here if needed
+      }
+    } catch (err) {
+      console.error("Export report failed:", err);
+    }
+  };
 
   // Modal State for Performance Matrix Details
   const [matrixModal, setMatrixModal] = useState<{
@@ -168,12 +225,22 @@ const ScenarioMatrixView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* <button className="p-3 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-[#0F172A] hover:shadow-md transition-all">
-            <Share2 className="w-5 h-5" />
-          </button> */}
-          <button className="px-6 py-3 bg-white border border-slate-100 text-[#0F172A] rounded-xl font-bold flex items-center gap-2 hover:shadow-md transition-all active:scale-95">
-            <Download className="w-5 h-5" />
-            Export Report
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="px-6 py-4 bg-[#0F172A] text-white rounded-2xl font-black text-sm flex items-center gap-3 hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-blue-900/20 group cursor-pointer"
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Preparing Report...
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5 group-hover:bounce" />
+                Export Full Strategic Report
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -444,7 +511,7 @@ const ScenarioMatrixView: React.FC = () => {
                     Rating: {matrixModal.rating}
                   </span>
                 </div>
-                <h4 className="text-lg font-black text-[#0F172A] tracking-tight leading-relaxed">
+                <h4 className="text-[16px] font-semibold text-[#0F172A]">
                   {matrixModal.optionTitle}
                 </h4>
                 <div className="flex items-center gap-2 text-blue-600">

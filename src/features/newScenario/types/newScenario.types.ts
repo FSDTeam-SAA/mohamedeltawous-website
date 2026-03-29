@@ -192,12 +192,47 @@ export interface WindtunnelResponse {
   data: WindtunnelResult;
 }
 
+export interface ReportPayload {
+  workshopState: {
+    company: {
+      name: string;
+      industry: string;
+      summary: string;
+      focalQuestion: string;
+      horizonYear: string;
+    };
+    classification: {
+      predetermined: ForceItem[];
+      uncertainties: ForceItem[];
+    };
+    axes: {
+      axisA: AxisResult;
+      axisB: AxisResult;
+    };
+    scenarios: {
+      scenarios: ScenarioResult[];
+    };
+    windTunnelResult: WindtunnelResult;
+  };
+}
+
+export interface ReportResponse {
+  success: boolean;
+  data?: unknown;
+  message?: string;
+}
+
 export interface ScenarioState {
   currentStep: number;
   company: CompanyInfo;
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
+  classification: {
+    predetermined: ForceItem[];
+    uncertainties: ForceItem[];
+  } | null;
   axes: AxesData | null;
+  scenarios: ScenarioResult[] | null;
   strategicOptions: string[];
   windtunnelData: WindtunnelResult | null;
   conversationHistory: { role: "user" | "assistant"; content: string }[];
@@ -208,7 +243,12 @@ export interface ScenarioState {
   addForce: (force: Omit<DrivingForce, "id" | "formatted">) => void;
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
+  setClassification: (data: {
+    predetermined: ForceItem[];
+    uncertainties: ForceItem[];
+  }) => void;
   updateAxes: (axes: AxesData) => void;
+  setScenarios: (scenarios: ScenarioResult[]) => void;
   updateStrategicOptions: (options: string[]) => void;
   setWindtunnelData: (data: WindtunnelResult) => void;
   addHistory: (role: "user" | "assistant", content: string) => void;

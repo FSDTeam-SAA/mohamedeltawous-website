@@ -8,7 +8,6 @@ import {
   AlertCircle,
   ArrowRight,
   Loader2,
-  CheckCircle2,
   Search,
   X,
   Plus,
@@ -43,6 +42,7 @@ const ScenarioResultView: React.FC = () => {
     setWindtunnelData,
     addHistory,
     setStep,
+    setScenarios: setScenariosToStore,
   } = useScenarioStore();
   const {
     mutateAsync: generateScenarios,
@@ -141,6 +141,7 @@ const ScenarioResultView: React.FC = () => {
 
         if (response?.success && response?.data?.scenarios) {
           setScenarios(response.data.scenarios);
+          setScenariosToStore(response.data.scenarios);
           const initialTabs: Record<number, string> = {};
           response.data.scenarios.forEach((s) => {
             initialTabs[s.id] = "narrative";
@@ -153,7 +154,14 @@ const ScenarioResultView: React.FC = () => {
     };
 
     triggerGeneration();
-  }, [axes, company, conversationHistory, forces, generateScenarios]);
+  }, [
+    axes,
+    company,
+    conversationHistory,
+    forces,
+    generateScenarios,
+    setScenariosToStore,
+  ]);
 
   if (isPending) {
     return (
