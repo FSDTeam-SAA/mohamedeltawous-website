@@ -13,14 +13,13 @@ import {
   TrendingUp,
   LayoutDashboard,
   ArrowLeft,
-  Share2,
   Download,
   X,
-  Search,
   Loader2,
 } from "lucide-react";
 import { useExportReport } from "../hooks/useNewScenario";
 import { ReportPayload } from "../types/newScenario.types";
+import { generatePdfFromMarkdown } from "../utils/generatePdfFromMarkdown";
 
 /**
  * Helper to truncate text to exactly N words.
@@ -48,11 +47,15 @@ const ScenarioMatrixView: React.FC = () => {
   const { mutateAsync: exportReport, isPending: isExporting } =
     useExportReport();
 
+  const [exportError, setExportError] = useState<string | null>(null);
+
   const handleExport = async () => {
     if (!axes || !classification || !scenarios || !windtunnelData) {
-      console.error("Missing workshop data for export.");
+      setExportError("Missing workshop data. Please complete all steps first.");
       return;
     }
+
+    setExportError(null);
 
     const payload: ReportPayload = {
       workshopState: {
@@ -83,16 +86,27 @@ const ScenarioMatrixView: React.FC = () => {
       },
     };
 
-    console.log("Triggering Export Report with payload:", payload);
-
     try {
       const response = await exportReport(payload);
-      if (response.success) {
-        console.log("Report exported successfully:", response);
-        // You could add a toast here if needed
+
+      if (response.success && response.data?.fullReportMarkdown) {
+        const safeCompanyName = company.name
+          ? company.name.replaceAll(/[^a-z0-9]/gi, "_")
+          : "Report";
+        const filename = `${safeCompanyName}_Strategic_Report_${company.horizonYear || "2030"}.pdf`;
+
+        await generatePdfFromMarkdown(
+          response.data.fullReportMarkdown,
+          filename,
+        );
+      } else {
+        setExportError(
+          "The server returned an empty report. Please try again.",
+        );
       }
     } catch (err) {
       console.error("Export report failed:", err);
+      setExportError("Failed to generate the report. Please try again.");
     }
   };
 
@@ -224,7 +238,7 @@ const ScenarioMatrixView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end gap-2">
           <button
             onClick={handleExport}
             disabled={isExporting}
@@ -242,6 +256,11 @@ const ScenarioMatrixView: React.FC = () => {
               </>
             )}
           </button>
+          {exportError && (
+            <p className="text-xs font-bold text-rose-500 max-w-[260px] text-right">
+              {exportError}
+            </p>
+          )}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import ParticlesBackground from "@/components/shared/ParticlesBackground";
+import Link from "next/link";
 
 const riskIndicators = [
   { name: "Market Crash", level: "HIGH", color: "bg-[#FF6B6B] text-white" },
@@ -60,9 +61,12 @@ export default function Banner() {
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-5 sm:flex-row">
-            <button className="inline-flex h-[60px] items-center justify-center rounded-xl bg-[#0F172A] px-10 text-[16px] font-bold text-white transition hover:opacity-95 shadow-xl shadow-blue-900/10 cursor-pointer">
+            <Link
+              href="/dashboard/new-scenario"
+              className="inline-flex h-[60px] items-center justify-center rounded-xl bg-[#0F172A] px-10 text-[16px] font-bold text-white transition hover:opacity-95 shadow-xl shadow-blue-900/10 cursor-pointer"
+            >
               Start Scenario Analysis
-            </button>
+            </Link>
 
             <button className="inline-flex h-[60px] items-center justify-center rounded-xl border-2 border-[#0F172A] bg-transparent px-10 text-[16px] font-bold text-[#0F172A] transition hover:bg-white/40 cursor-pointer">
               View Sample Report
