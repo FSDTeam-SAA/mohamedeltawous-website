@@ -243,7 +243,7 @@ const ForceCard: React.FC<ForceCardProps> = ({ item, type }) => {
         </div>
       </div>
 
-      <p className="text-slate-600 text-sm leading-relaxed font-medium">
+      <p className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-wrap">
         {item.rationale}
       </p>
 
