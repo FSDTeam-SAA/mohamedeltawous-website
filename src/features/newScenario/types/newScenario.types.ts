@@ -67,14 +67,24 @@ export interface AxesPayload {
 
 export interface AxisResult {
   label: string;
-  pole1: string;
-  pole2: string;
+  pole1?: string;
+  pole2?: string;
+  poleA1?: string;
+  poleA2?: string;
+  poleB1?: string;
+  poleB2?: string;
   reason: string;
 }
 
 export interface AxesData {
   axisA: AxisResult;
   axisB: AxisResult;
+  scenarios?: {
+    topRight: { name: string; summary: string };
+    topLeft: { name: string; summary: string };
+    bottomLeft: { name: string; summary: string };
+    bottomRight: { name: string; summary: string };
+  };
 }
 
 export interface AxesResponse {
@@ -108,11 +118,124 @@ export interface MatrixPayload {
   conversationHistory: unknown[];
 }
 
+export interface ScenariosPayload {
+  company: {
+    name: string;
+    industry: string;
+    summary: string;
+    focalQuestion: string;
+    horizonYear: string;
+  };
+  axes: {
+    axisA: {
+      label: string;
+      poleA1: string;
+      poleA2: string;
+    };
+    axisB: {
+      label: string;
+      poleB1: string;
+      poleB2: string;
+    };
+  };
+  forces: string[];
+  conversationHistory: { role: string; content: string }[];
+}
+
+export interface ScenarioResult {
+  id: number;
+  name: string;
+  combination: string;
+  story: string;
+  implications: string;
+  signposts: string[];
+}
+
+export interface ScenariosResponse {
+  success: boolean;
+  data: {
+    scenarios: ScenarioResult[];
+  };
+}
+
+export interface WindtunnelPayload {
+  company: {
+    name: string;
+    focalQuestion: string;
+    horizonYear: string;
+  };
+  scenarios: ScenarioResult[];
+  strategicOptions: string[];
+  conversationHistory: { role: string; content: string }[];
+}
+
+export interface WindtunnelCell {
+  rating: string;
+  reasoning: string;
+}
+
+export interface RobustMoves {
+  noRegret: string[];
+  keepOpen: string[];
+  defer: string[];
+}
+
+export interface WindtunnelResult {
+  windTunnel: WindtunnelCell[][];
+  robustMoves: RobustMoves;
+  strategicConclusion: string;
+  recommendedOption: string;
+}
+
+export interface WindtunnelResponse {
+  success: boolean;
+  data: WindtunnelResult;
+}
+
+export interface ReportPayload {
+  workshopState: {
+    company: {
+      name: string;
+      industry: string;
+      summary: string;
+      focalQuestion: string;
+      horizonYear: string;
+    };
+    classification: {
+      predetermined: ForceItem[];
+      uncertainties: ForceItem[];
+    };
+    axes: {
+      axisA: AxisResult;
+      axisB: AxisResult;
+    };
+    scenarios: {
+      scenarios: ScenarioResult[];
+    };
+    windTunnelResult: WindtunnelResult;
+  };
+}
+
+export interface ReportResponse {
+  success: boolean;
+  data?: unknown;
+  message?: string;
+}
+
 export interface ScenarioState {
   currentStep: number;
   company: CompanyInfo;
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
+  classification: {
+    predetermined: ForceItem[];
+    uncertainties: ForceItem[];
+  } | null;
+  axes: AxesData | null;
+  scenarios: ScenarioResult[] | null;
+  strategicOptions: string[];
+  windtunnelData: WindtunnelResult | null;
+  conversationHistory: { role: "user" | "assistant"; content: string }[];
 
   // Actions
   setStep: (step: number) => void;
@@ -120,5 +243,14 @@ export interface ScenarioState {
   addForce: (force: Omit<DrivingForce, "id" | "formatted">) => void;
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
+  setClassification: (data: {
+    predetermined: ForceItem[];
+    uncertainties: ForceItem[];
+  }) => void;
+  updateAxes: (axes: AxesData) => void;
+  setScenarios: (scenarios: ScenarioResult[]) => void;
+  updateStrategicOptions: (options: string[]) => void;
+  setWindtunnelData: (data: WindtunnelResult) => void;
+  addHistory: (role: "user" | "assistant", content: string) => void;
   resetStore: () => void;
 }

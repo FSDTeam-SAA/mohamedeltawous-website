@@ -43,7 +43,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
   onAxesGenerated,
 }) => {
   const { data } = fullResponse;
-  const { company, setStep } = useScenarioStore();
+  const { company, setStep, addHistory } = useScenarioStore();
 
   if (!isOpen) return null;
 
@@ -172,7 +172,10 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
 
                 const response = await generateAxes(payload);
                 console.log("Successfully generated axes.");
+
                 if (response?.data) {
+                  addHistory("user", "Select axes.");
+                  addHistory("assistant", JSON.stringify(response.data));
                   onAxesGenerated(response.data);
                 }
                 onClose();
@@ -181,7 +184,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
                 console.error("Axes generation failed:", err);
               }
             }}
-            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center"
+            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center cursor-pointer"
           >
             {isPending ? (
               <>
@@ -240,7 +243,7 @@ const ForceCard: React.FC<ForceCardProps> = ({ item, type }) => {
         </div>
       </div>
 
-      <p className="text-slate-600 text-sm leading-relaxed font-medium">
+      <p className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-wrap">
         {item.rationale}
       </p>
 

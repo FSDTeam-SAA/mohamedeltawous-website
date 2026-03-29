@@ -5,15 +5,11 @@ import { useScenarioStore } from "../store/useScenarioStore";
 import { useClassifyWorkshop, useGenerateAxes } from "../hooks/useNewScenario";
 import ForceClassificationModal from "./ForceClassificationModal";
 import ScenarioAxesModal from "./ScenarioAxesModal";
+import { AxesData, ClassifyResponse } from "../types/newScenario.types";
+import ScenarioResultView from "./ScenarioResultView";
 import ScenarioMatrixView from "./ScenarioMatrixView";
 import {
-  AxesData,
-  ClassifyResponse,
-  MatrixData,
-} from "../types/newScenario.types";
-import {
   Check,
-  Sparkles,
   Plus,
   Trash2,
   ChevronLeft,
@@ -23,6 +19,7 @@ import {
   Search,
   Zap,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 
 const PREDEFINED_CATEGORIES = [
@@ -47,6 +44,9 @@ export default function NewScenario() {
     setStep,
     movingFactors,
     updateMovingFactors,
+    addHistory,
+    updateAxes,
+    setClassification,
   } = useScenarioStore();
 
   const { mutateAsync: classifyWorker, isPending: isClassifying } =
@@ -64,8 +64,6 @@ export default function NewScenario() {
 
   const [isAxesModalOpen, setIsAxesModalOpen] = useState(false);
   const [axesData, setAxesData] = useState<AxesData | null>(null);
-
-  const [matrixData, setMatrixData] = useState<MatrixData | null>(null);
 
   const handleToggleCategory = (cat: string) => {
     const exists = movingFactors.find(
@@ -108,20 +106,40 @@ export default function NewScenario() {
   };
 
   const handleDescriptionChange = (cat: string, desc: string) => {
+    let finalDesc = desc;
+    if (desc.length > 0 && !desc.startsWith("•") && desc !== " ") {
+      finalDesc = "• " + desc;
+    }
+
     const updated = movingFactors.map((f) =>
-      f.category === cat ? { ...f, description: desc } : f,
+      f.category === cat ? { ...f, description: finalDesc } : f,
     );
     updateMovingFactors(updated);
   };
 
-  const handleContinue = () => {
-    // Log stored data in the console
-    console.log(`Saving Step ${currentStep} Data to Zustand Store:`, {
-      currentStep,
-      company,
-    });
+  const handleDescriptionKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    cat: string,
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const { selectionStart, selectionEnd, value } = textarea;
 
-    // Move to the next step
+      const newValue =
+        value.substring(0, selectionStart) +
+        "\n• " +
+        value.substring(selectionEnd);
+
+      handleDescriptionChange(cat, newValue);
+
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = selectionStart + 3;
+      }, 0);
+    }
+  };
+
+  const handleContinue = () => {
     setStep(currentStep + 1);
   };
 
@@ -138,26 +156,22 @@ export default function NewScenario() {
     { label: "Strategic Question", icon: Search },
     { label: "Company Profile", icon: Building2 },
     { label: "Moving Factors", icon: Zap },
-    { label: "Scenario Matrix", icon: Globe },
+    { label: "Scenario Discovery", icon: Globe },
+    { label: "Scenario Matrix", icon: CheckCircle2 },
   ];
 
   return (
     <section className="bg-slate-50 min-h-screen py-20 px-4 font-sans">
       <div className="max-w-5xl mx-auto">
-        {/* Modern Stepper */}
         <div className="mb-16">
           <div className="flex justify-between items-center relative">
-            {/* Background Progress Line */}
             <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 z-0" />
-
-            {/* Active Progress Line */}
             <div
               className="absolute top-1/2 left-0 h-0.5 bg-[#0F172A] -translate-y-1/2 z-0 transition-all duration-500 ease-in-out"
               style={{
                 width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%`,
               }}
             />
-
             {STEPS.map((step, i) => {
               const stepNum = i + 1;
               const Icon = step.icon;
@@ -198,10 +212,8 @@ export default function NewScenario() {
             })}
           </div>
         </div>
-        {/* Card for Step 1 */}
         {currentStep === 1 && (
           <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-10 border border-slate-100">
-            {/* Title */}
             <header className="mb-8">
               <h2 className="text-2xl font-black text-[#0F172A] tracking-tight">
                 Define Your Strategic Question
@@ -213,7 +225,6 @@ export default function NewScenario() {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-              {/* Project Title */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="projectTitle"
@@ -236,7 +247,6 @@ export default function NewScenario() {
                 </p>
               </div>
 
-              {/* Company Name */}
               <div>
                 <label
                   htmlFor="companyName"
@@ -254,7 +264,6 @@ export default function NewScenario() {
                 />
               </div>
 
-              {/* Industry */}
               <div>
                 <label
                   htmlFor="industry"
@@ -272,7 +281,6 @@ export default function NewScenario() {
                 />
               </div>
 
-              {/* Strategic Question */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="focalQuestion"
@@ -297,14 +305,13 @@ export default function NewScenario() {
               </div>
             </div>
 
-            {/* AI Tip */}
-            <div className="mt-10 bg-[#DEF0FA] border border-blue-100 rounded-2xl p-6 flex gap-4 items-start shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-                <Sparkles className="w-5 h-5 text-[#0F172A]" />
+            <div className="bg-[#ECFDF5] border border-emerald-100 rounded-4xl p-8 flex gap-6 items-start shadow-sm mt-10 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
               </div>
               <div className="text-sm">
-                <p className="font-black text-[#0F172A] mb-1 uppercase tracking-wider text-[10px]">
-                  AI Strategy Tip
+                <p className="font-black text-emerald-900 mb-2 uppercase tracking-widest text-[10px]">
+                  Strategic Formulation Tip
                 </p>
                 <p className="text-slate-700 leading-relaxed font-medium">
                   Try to include a specific timeframe and a core business
@@ -317,7 +324,6 @@ export default function NewScenario() {
               </div>
             </div>
 
-            {/* Buttons */}
             <div className="mt-10 flex justify-between items-center">
               <button
                 type="button"
@@ -338,8 +344,7 @@ export default function NewScenario() {
               </button>
             </div>
           </div>
-        )}{" "}
-        {/* Card for Step 2 - Company Profiling */}
+        )}
         {currentStep === 2 && (
           <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-10 border border-slate-100">
             <header className="text-center max-w-2xl mx-auto mb-12">
@@ -353,7 +358,6 @@ export default function NewScenario() {
             </header>
 
             <div className="space-y-8">
-              {/* Company Summary */}
               <div>
                 <label
                   htmlFor="companySummary"
@@ -379,7 +383,6 @@ export default function NewScenario() {
                 </div>
               </div>
 
-              {/* Horizon Year */}
               <div>
                 <label
                   htmlFor="horizonYear"
@@ -557,7 +560,7 @@ export default function NewScenario() {
                           <button
                             type="button"
                             onClick={() => handleRemoveFactor(factor.category)}
-                            className="bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all p-2 rounded-xl"
+                            className="bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all p-2 rounded-xl cursor-pointer"
                             title="Remove factor"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -565,7 +568,6 @@ export default function NewScenario() {
                         </div>
                         <textarea
                           id={`desc-${factor.category}`}
-                          rows={3}
                           value={factor.description}
                           onChange={(e) =>
                             handleDescriptionChange(
@@ -573,8 +575,11 @@ export default function NewScenario() {
                               e.target.value,
                             )
                           }
-                          placeholder={`Describe the specific dynamics and future implications of ${factor.category.toLowerCase()}...`}
-                          className="w-full border-2 border-slate-50 bg-slate-50/30 rounded-2xl px-6 py-5 text-sm outline-none focus:ring-2 focus:ring-[#0F172A] focus:bg-white focus:border-transparent transition-all resize-none leading-relaxed"
+                          onKeyDown={(e) =>
+                            handleDescriptionKeyDown(e, factor.category)
+                          }
+                          placeholder={`Describe the specific dynamics and future implications of ${factor.category.toLowerCase()}... (Use Enter for bullet points)`}
+                          className="w-full border-2 border-slate-50 bg-slate-50/30 rounded-2xl px-6 py-5 text-sm outline-none focus:ring-2 focus:ring-[#0F172A] focus:bg-white focus:border-transparent transition-all resize-none leading-relaxed min-h-[140px]"
                         />
                       </div>
                     ))}
@@ -650,6 +655,11 @@ export default function NewScenario() {
                     console.log("Successfully submitted data to API.");
 
                     if (response?.data) {
+                      // Update History
+                      addHistory("user", "Classify forces.");
+                      addHistory("assistant", JSON.stringify(response.data));
+
+                      setClassification(response.data);
                       setClassificationData(response);
                       setIsClassificationModalOpen(true);
                     }
@@ -687,6 +697,8 @@ export default function NewScenario() {
             generateAxes={generateAxes}
             isGeneratingAxes={isGeneratingAxes}
             onAxesGenerated={(data) => {
+              // History for "Select axes" is handled inside ForceClassificationModal
+              updateAxes(data); // Save to store
               setAxesData(data);
               setIsAxesModalOpen(true);
             }}
@@ -698,34 +710,15 @@ export default function NewScenario() {
             isOpen={isAxesModalOpen}
             onClose={() => setIsAxesModalOpen(false)}
             data={axesData}
-            projectName={company.projectTitle || company.name}
-            onMatrixGenerated={(data) => {
-              setMatrixData(data);
+            onScenariosGenerated={() => {
+              // Navigation to stats 4 handled via setStep(4) in modal
             }}
           />
         )}
-        {/* Step 4: Scenario Matrix View */}
-        {currentStep === 4 && matrixData && axesData && (
-          <ScenarioMatrixView
-            matrix={matrixData}
-            axisA={axesData.axisA}
-            axisB={axesData.axisB}
-          />
-        )}
-        {!matrixData && currentStep === 4 && (
-          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-20 text-center border border-slate-100 animate-pulse">
-            <div className="w-20 h-20 rounded-3xl bg-[#DEF0FA] flex items-center justify-center mx-auto mb-8 shadow-sm">
-              <Sparkles className="w-10 h-10 text-[#0F172A]" />
-            </div>
-            <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter">
-              Synthesizing Strategic Worlds
-            </h2>
-            <p className="text-slate-500 mt-4 max-w-md mx-auto font-medium leading-relaxed">
-              We&apos;re processing your inputs to build the final scenario
-              matrix. This core framework will define your strategic horizons.
-            </p>
-          </div>
-        )}
+        {/* Step 4: Scenario Results Deep Dive */}
+        {currentStep === 4 && <ScenarioResultView />}
+        {/* Step 5: Strategic Wind Tunnel (Scenario Matrix) */}
+        {currentStep === 5 && <ScenarioMatrixView />}
       </div>
     </section>
   );
