@@ -105,10 +105,42 @@ export default function NewScenario() {
   };
 
   const handleDescriptionChange = (cat: string, desc: string) => {
+    let finalDesc = desc;
+    // If user starts typing the first character and it's not a bullet, prepend one
+    if (desc.length === 1 && desc !== "•" && desc !== " ") {
+      finalDesc = "• " + desc;
+    } else if (desc.length > 0 && !desc.startsWith("•")) {
+      finalDesc = "• " + desc;
+    }
+
     const updated = movingFactors.map((f) =>
-      f.category === cat ? { ...f, description: desc } : f,
+      f.category === cat ? { ...f, description: finalDesc } : f,
     );
     updateMovingFactors(updated);
+  };
+
+  const handleDescriptionKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    cat: string,
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const { selectionStart, selectionEnd, value } = textarea;
+
+      // Insert newline and bullet at cursor position
+      const newValue =
+        value.substring(0, selectionStart) +
+        "\n• " +
+        value.substring(selectionEnd);
+
+      handleDescriptionChange(cat, newValue);
+
+      // Set cursor position after the new bullet
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = selectionStart + 3;
+      }, 0);
+    }
   };
 
   const handleContinue = () => {
@@ -555,7 +587,7 @@ export default function NewScenario() {
                           <button
                             type="button"
                             onClick={() => handleRemoveFactor(factor.category)}
-                            className="bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all p-2 rounded-xl"
+                            className="bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all p-2 rounded-xl cursor-pointer"
                             title="Remove factor"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -563,7 +595,6 @@ export default function NewScenario() {
                         </div>
                         <textarea
                           id={`desc-${factor.category}`}
-                          rows={3}
                           value={factor.description}
                           onChange={(e) =>
                             handleDescriptionChange(
@@ -571,8 +602,11 @@ export default function NewScenario() {
                               e.target.value,
                             )
                           }
-                          placeholder={`Describe the specific dynamics and future implications of ${factor.category.toLowerCase()}...`}
-                          className="w-full border-2 border-slate-50 bg-slate-50/30 rounded-2xl px-6 py-5 text-sm outline-none focus:ring-2 focus:ring-[#0F172A] focus:bg-white focus:border-transparent transition-all resize-none leading-relaxed"
+                          onKeyDown={(e) =>
+                            handleDescriptionKeyDown(e, factor.category)
+                          }
+                          placeholder={`Describe the specific dynamics and future implications of ${factor.category.toLowerCase()}... (Use Enter for bullet points)`}
+                          className="w-full border-2 border-slate-50 bg-slate-50/30 rounded-2xl px-6 py-5 text-sm outline-none focus:ring-2 focus:ring-[#0F172A] focus:bg-white focus:border-transparent transition-all resize-none leading-relaxed min-h-[140px]"
                         />
                       </div>
                     ))}
