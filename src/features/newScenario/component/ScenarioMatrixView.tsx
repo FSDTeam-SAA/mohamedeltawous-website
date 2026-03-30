@@ -155,7 +155,7 @@ const ScenarioMatrixView: React.FC = () => {
         </h2>
         <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">
           Please complete the Scenario Discovery step and click &quot;Continue
-          to Finalize&quot; to generate the Strategic Wind Tunnel.
+          to Finalize&quot; to generate the Strategic Wind-tunnelling.
         </p>
         <button
           onClick={() => setStep(4)}
@@ -229,7 +229,7 @@ const ScenarioMatrixView: React.FC = () => {
             </span>
           </div>
           <h1 className="text-4xl font-black text-[#0F172A] tracking-tighter">
-            Strategic Wind Tunnel
+            Strategic Wind-tunnelling
           </h1>
           <p className="text-slate-500 mt-2 font-medium max-w-2xl">
             Stress-testing your strategic options for{" "}

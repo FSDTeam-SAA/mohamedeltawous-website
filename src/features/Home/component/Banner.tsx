@@ -68,9 +68,13 @@ export default function Banner() {
               Start Scenario Analysis
             </Link>
 
-            <button className="inline-flex h-[60px] items-center justify-center rounded-xl border-2 border-[#0F172A] bg-transparent px-10 text-[16px] font-bold text-[#0F172A] transition hover:bg-white/40 cursor-pointer">
+            <Link
+              href={"/pdf/secondsight.pdf"}
+              target="_blank"
+              className="inline-flex h-[60px] items-center justify-center rounded-xl border-2 border-[#0F172A] bg-transparent px-10 text-[16px] font-bold text-[#0F172A] transition hover:bg-white/40 cursor-pointer"
+            >
               View Sample Report
-            </button>
+            </Link>
           </div>
         </div>
 
