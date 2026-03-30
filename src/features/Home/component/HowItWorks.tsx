@@ -21,7 +21,7 @@ const steps = [
     title: "Moving Factors",
     desc: "Input your strategic core inquiry",
     tooltip:
-      "Identify key external factors Stirdeeper that could impact your strategy and future outcomes.",
+      "Identify key external factors STIRDEEPER that could impact your strategy and future outcomes.",
   },
   {
     icon: Sparkles,

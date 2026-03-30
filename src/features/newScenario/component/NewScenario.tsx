@@ -717,7 +717,7 @@ export default function NewScenario() {
         )}
         {/* Step 4: Scenario Results Deep Dive */}
         {currentStep === 4 && <ScenarioResultView />}
-        {/* Step 5: Strategic Wind Tunnel (Scenario Matrix) */}
+        {/* Step 5: Strategic Wind-tunnelling (Scenario Matrix) */}
         {currentStep === 5 && <ScenarioMatrixView />}
       </div>
     </section>
