@@ -381,6 +381,24 @@ export default function NewScenario() {
                     {company.companySummary.length} / 500
                   </div>
                 </div>
+                <div>
+                  <label
+                    htmlFor="websiteUrl"
+                    className="text-xs mt-4 font-bold text-slate-400 uppercase tracking-widest mb-3 block"
+                  >
+                    Company Website URL(Optional)
+                  </label>
+                  <input
+                    id="websiteUrl"
+                    type="text"
+                    value={company.websiteUrl || ""}
+                    onChange={(e) =>
+                      updateCompany({ websiteUrl: e.target.value })
+                    }
+                    placeholder="https://www.example.com"
+                    className="w-full border-2 border-slate-100 bg-slate-50/50 rounded-2xl px-6 py-5 text-sm outline-none focus:ring-2 focus:ring-[#0F172A] focus:bg-white transition-all resize-none leading-relaxed"
+                  />
+                </div>
               </div>
 
               <div>
@@ -634,7 +652,9 @@ export default function NewScenario() {
                       projectTitle: state.company.projectTitle,
                       name: state.company.name,
                       industry: state.company.industry,
-                      summary: state.company.companySummary,
+                      summary: state.company.websiteUrl
+                        ? `${state.company.companySummary}\n\nCompany Website: ${state.company.websiteUrl}`
+                        : state.company.companySummary,
                       focalQuestion: state.company.focalQuestion,
                     },
                     forces: state.movingFactors.map(
