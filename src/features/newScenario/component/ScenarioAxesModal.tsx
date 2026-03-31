@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Layers, Loader2, ArrowRight } from "lucide-react";
+import {
+  X,
+  Layers,
+  Loader2,
+  ArrowRight,
+  BookOpen,
+  Move,
+  ArrowRightLeft,
+  Lightbulb,
+  Grid2X2,
+} from "lucide-react";
 import { AxesData, ScenariosResponse } from "../types/newScenario.types";
 import { useGenerateScenarios } from "../hooks/useNewScenario";
 import { useScenarioStore } from "../store/useScenarioStore";
@@ -79,30 +89,91 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
             scenarios={axesData.scenarios}
           />
 
-          {/* Strategy Insight Banner */}
-          {/* <div className="mt-10 bg-[#0F172A] rounded-3xl p-8 flex items-center justify-between text-white shadow-2xl overflow-hidden relative group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="flex gap-6 items-center relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-7 h-7 text-blue-300" />
+          {/* Blueprint Guide */}
+          <div className="mt-12 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+            {/* Background Accent */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100/50 shadow-sm">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-[#0F172A] tracking-tight">
+                    Understanding the Blueprint
+                  </h3>
+                  <p className="text-sm font-medium text-slate-500">
+                    How to read the strategic matrix for{" "}
+                    {company.name || "your company"}
+                  </p>
+                </div>
               </div>
-              <div className="max-w-2xl">
-                <h4 className="text-lg font-black tracking-tight mb-1">
-                  Building the Future Framework
-                </h4>
-                <p className="text-blue-100/70 text-sm font-medium leading-relaxed">
-                  These critical uncertainties identify the most impactful and
-                  unpredictable drivers for your strategy. Crossing these axes
-                  will define the four unique scenario worlds for {projectName}.
-                </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Axis */}
+                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mb-4 text-indigo-600 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                    <Move className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
+                    1. The &quot;Axis&quot;
+                  </h4>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    A <strong>Critical Uncertainty</strong> that has a massive
+                    impact on your business but is highly unpredictable. It
+                    forms the X or Y dimensions of the future.
+                  </p>
+                </div>
+
+                {/* Pole */}
+                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-4 text-emerald-600 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                    <ArrowRightLeft className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
+                    2. The &quot;Pole&quot;
+                  </h4>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    An extreme &quot;end&quot; of an axis (e.g., Low vs High).
+                    Each axis features two opposing poles that represent
+                    contrasting versions of tomorrow.
+                  </p>
+                </div>
+
+                {/* Reason */}
+                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-4 text-amber-600 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+                    <Lightbulb className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
+                    3. The &quot;Reason&quot;
+                  </h4>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    The strategic logic explaining why these specific axes were
+                    chosen, highlighting their <strong>Impact</strong>,{" "}
+                    <strong>Uncertainty</strong>, and{" "}
+                    <strong>Independence</strong>.
+                  </p>
+                </div>
+
+                {/* Quadrant */}
+                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
+                  <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center mb-4 text-rose-600 group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
+                    <Grid2X2 className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
+                    4. The &quot;Quadrant&quot;
+                  </h4>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    Crossing the two axes yields 4 distinct boxes. Each quadrant
+                    represents a unique &quot;Future World&quot; that you must
+                    strategize and prepare for.
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="relative z-10 hidden md:block">
-              <div className="text-[10px] font-black text-blue-300/50 uppercase tracking-[0.4em] origin-right rotate-90 whitespace-nowrap">
-                STRATEGIC HORIZON
-              </div>
-            </div>
-          </div> */}
+          </div>
         </div>
 
         {/* High-End Footer */}
