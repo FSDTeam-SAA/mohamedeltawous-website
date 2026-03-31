@@ -10,6 +10,7 @@ const emptyCompany = {
   focalQuestion: "",
   companySummary: "",
   horizonYear: "2030",
+  websiteUrl: "",
 };
 
 export const useScenarioStore = create<ScenarioState>((set) => ({
