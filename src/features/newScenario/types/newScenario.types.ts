@@ -12,6 +12,7 @@ export interface CompanyInfo {
   focalQuestion: string;
   companySummary: string;
   horizonYear: string;
+  websiteUrl?: string;
 }
 
 export interface DrivingForce {
