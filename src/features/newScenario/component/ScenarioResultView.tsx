@@ -140,10 +140,22 @@ const ScenarioResultView: React.FC = () => {
         const response = await generateScenarios(payload);
 
         if (response?.success && response?.data?.scenarios) {
-          setScenarios(response.data.scenarios);
-          setScenariosToStore(response.data.scenarios);
+          const SCENARIO_TITLES = [
+            "Fintech Disruption Wave",
+            "Fragmented Ambition",
+            "Digital Surge, Local Roots",
+            "Relationship-Centric Fortress",
+          ];
+
+          const mappedScenarios = response.data.scenarios.map((s, idx) => ({
+            ...s,
+            name: SCENARIO_TITLES[idx] || s.name,
+          }));
+
+          setScenarios(mappedScenarios);
+          setScenariosToStore(mappedScenarios);
           const initialTabs: Record<number, string> = {};
-          response.data.scenarios.forEach((s) => {
+          mappedScenarios.forEach((s) => {
             initialTabs[s.id] = "narrative";
           });
           setActiveTabs(initialTabs);
@@ -300,9 +312,9 @@ const ScenarioResultView: React.FC = () => {
                 <div className="flex justify-between items-start mb-8">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      {/* <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Scenario {String.fromCodePoint(65 + idx)}
-                      </span>
+                      </span> */}
                     </div>
                     <h2 className="text-2xl font-black text-[#0F172A] tracking-tight group-hover:text-blue-600 transition-colors">
                       {s.name}
