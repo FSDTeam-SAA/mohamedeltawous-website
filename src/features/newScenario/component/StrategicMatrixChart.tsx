@@ -36,9 +36,9 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
             <h4 className="text-sm sm:text-base font-black text-amber-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
               {scenarios?.topLeft?.name || "Scenario I"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
               {scenarios?.topLeft?.summary}
-            </p>
+            </p> */}
           </div>
 
           {/* Top Right Quadrant */}
@@ -46,9 +46,9 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
             <h4 className="text-sm sm:text-base font-black text-emerald-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
               {scenarios?.topRight?.name || "Scenario II"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
               {scenarios?.topRight?.summary}
-            </p>
+            </p> */}
           </div>
 
           {/* Bottom Left Quadrant */}
@@ -56,9 +56,9 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
             <h4 className="text-sm sm:text-base font-black text-rose-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
               {scenarios?.bottomLeft?.name || "Scenario III"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
               {scenarios?.bottomLeft?.summary}
-            </p>
+            </p> */}
           </div>
 
           {/* Bottom Right Quadrant */}
@@ -66,9 +66,9 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
             <h4 className="text-sm sm:text-base font-black text-blue-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
               {scenarios?.bottomRight?.name || "Scenario IV"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
               {scenarios?.bottomRight?.summary}
-            </p>
+            </p> */}
           </div>
 
           {/* Internal Axes Dividers */}

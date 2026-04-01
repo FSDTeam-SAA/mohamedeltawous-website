@@ -570,12 +570,12 @@ const ScenarioResultView: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Professional Strategic Analysis
               </span>
-              <button
+              {/* <button
                 onClick={closeModal}
                 className="px-10 py-3.5 bg-[#0F172A] text-white rounded-xl font-bold text-sm hover:shadow-2xl hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer shadow-lg shadow-blue-900/10"
               >
                 Dismiss Case Study
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

@@ -1,0 +1,221 @@
+.container {
+  width: 100%;
+  margin: 0 auto;
+  font-family: inherit;
+}
+
+.backgroundWrap {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--secondary); /* Matches Home Banner */
+  padding-bottom: 4rem;
+}
+
+.hero {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 10rem 1.5rem 6rem; /* Matches Banner's pt-32/40 */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 1.25rem;
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  color: #111827;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #111827;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.title {
+  font-size: clamp(2.5rem, 8vw, 4.75rem);
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: #5B6B82;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* Sections */
+.mainContent {
+  background-color: #fcfbf8; /* Background matches layout.tsx */
+  padding-top: 5rem;
+  padding-bottom: 8rem;
+}
+
+.section {
+  max-width: 1100px;
+  margin: 0 auto 10rem auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .section {
+    grid-template-columns: 280px 1fr;
+    gap: 6rem;
+  }
+}
+
+.sectionHeader {
+  height: fit-content;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 1.5rem;
+}
+
+.contentBlock {
+  max-width: 750px;
+}
+
+.paragraph {
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: #475569;
+  margin-bottom: 2rem;
+}
+
+.highlightedParagraph {
+  font-size: 1.35rem;
+  line-height: 1.6;
+  color: #0F172A;
+  font-weight: 700;
+  padding: 2.5rem;
+  background-color: white;
+  border-left: 4px solid #0F172A;
+  border-radius: 0 1.5rem 1.5rem 0;
+  margin: 0 0 3.5rem 0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+.italic {
+  font-style: italic;
+  color: #5B6B82;
+}
+
+/* Problem List Cards */
+.problemList {
+  list-style: none;
+  padding: 0;
+  margin: 3rem 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .problemList {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+.problemItem {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 2rem;
+  background: white;
+  border: 1px solid rgba(17, 24, 39, 0.1); /* Standard Home Border */
+  border-radius: 1.5rem;
+  font-weight: 700;
+  color: #0F172A;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.02);
+}
+
+.problemItem:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.2);
+}
+
+.checkIcon {
+  color: #ff6b6b; /* Market Crash Red from Home */
+  flex-shrink: 0;
+}
+
+.quote {
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
+  padding-top: 4rem;
+  margin-top: 6rem;
+  text-align: center;
+}
+
+.quoteText {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Call to Action Card */
+.ctaCard {
+  margin-top: 6rem;
+  padding: 4rem;
+  background-color: white;
+  border-radius: 2.5rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 32px 80px rgba(15, 23, 42, 0.08);
+}
+
+.ctaTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 1.25rem;
+}
+
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  background-color: #0F172A;
+  color: white;
+  border-radius: 1rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.ctaLink:hover {
+  opacity: 0.95;
+  transform: translateX(4px);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+}
