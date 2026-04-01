@@ -176,7 +176,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
           </div>
         </div>
 
-        {/* High-End Footer */}
         <footer className="px-10 py-8 bg-white border-t border-slate-100 flex items-center justify-between">
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest hidden sm:block">
             Step 3 of 4 • Scenario Framework Finalization

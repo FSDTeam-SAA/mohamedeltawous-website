@@ -350,44 +350,53 @@ const ScenarioMatrixView: React.FC = () => {
                         {option}
                       </p>
                     </td>
-                    {windtunnelData.windTunnel[optIdx]?.map((cell, sceIdx) => {
-                      const styles = getRatingStyles(cell.rating);
+                    {windtunnelData?.windTunnel?.[optIdx] ? (
+                      windtunnelData.windTunnel[optIdx].map((cell, sceIdx) => {
+                        const styles = getRatingStyles(cell.rating);
 
-                      return (
-                        <td
-                          key={sceIdx}
-                          className="p-6 border-r border-slate-100 text-center transition-all duration-300"
-                        >
-                          <div className="flex flex-col items-center gap-4">
-                            <span
-                              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles.bg} ${styles.text} ${styles.border} shadow-sm`}
-                            >
-                              {cell.rating}
-                            </span>
-                            <div className="space-y-2">
-                              <p className="text-xs text-slate-500 font-semibold leading-relaxed max-w-[180px]">
-                                {truncateText(cell.reasoning, 25).truncated}
-                              </p>
-                              {truncateText(cell.reasoning, 25).needsMore && (
-                                <button
-                                  onClick={() =>
-                                    openMatrixModal(
-                                      option,
-                                      scenarioLabels[sceIdx],
-                                      cell.reasoning,
-                                      cell.rating,
-                                    )
-                                  }
-                                  className={`text-[10px] font-black uppercase tracking-widest ${styles.text} hover:opacity-70 transition-all cursor-pointer`}
-                                >
-                                  See Analysis
-                                </button>
-                              )}
+                        return (
+                          <td
+                            key={sceIdx}
+                            className="p-6 border-r border-slate-100 text-center transition-all duration-300"
+                          >
+                            <div className="flex flex-col items-center gap-4">
+                              <span
+                                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles.bg} ${styles.text} ${styles.border} shadow-sm`}
+                              >
+                                {cell.rating}
+                              </span>
+                              <div className="space-y-2">
+                                <p className="text-xs text-slate-500 font-semibold leading-relaxed max-w-[180px]">
+                                  {truncateText(cell.reasoning, 25).truncated}
+                                </p>
+                                {truncateText(cell.reasoning, 25).needsMore && (
+                                  <button
+                                    onClick={() =>
+                                      openMatrixModal(
+                                        option,
+                                        scenarioLabels[sceIdx],
+                                        cell.reasoning,
+                                        cell.rating,
+                                      )
+                                    }
+                                    className={`text-[10px] font-black uppercase tracking-widest ${styles.text} hover:opacity-70 transition-all cursor-pointer`}
+                                  >
+                                    See Analysis
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                      );
-                    })}
+                          </td>
+                        );
+                      })
+                    ) : (
+                      <td
+                        colSpan={4}
+                        className="p-6 text-center text-slate-400 italic"
+                      >
+                        No analysis data for this option.
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -509,7 +518,7 @@ const ScenarioMatrixView: React.FC = () => {
                 onClick={closeMatrixModal}
                 className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#0F172A] hover:bg-slate-100 transition-all active:scale-95 group"
               >
-                <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300 cursor-pointer" />
               </button>
             </div>
 
@@ -559,12 +568,12 @@ const ScenarioMatrixView: React.FC = () => {
 
             {/* Modal Footer */}
             <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50 flex justify-end">
-              <button
+              {/* <button
                 onClick={closeMatrixModal}
                 className="px-8 py-3 bg-[#0F172A] text-white rounded-xl font-bold text-sm hover:shadow-2xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-blue-900/10"
               >
                 Close Analysis
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

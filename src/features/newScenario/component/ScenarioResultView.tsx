@@ -140,20 +140,18 @@ const ScenarioResultView: React.FC = () => {
         const response = await generateScenarios(payload);
 
         if (response?.success && response?.data?.scenarios) {
-          const SCENARIO_TITLES = [
-            "Fintech Disruption Wave",
-            "Fragmented Ambition",
-            "Digital Surge, Local Roots",
-            "Relationship-Centric Fortress",
-          ];
+          const mappedScenarios = response.data.scenarios;
+          const newStrategicOptions = response.data.strategicOptions;
 
-          const mappedScenarios = response.data.scenarios.map((s, idx) => ({
-            ...s,
-            name: SCENARIO_TITLES[idx] || s.name,
-          }));
+          if (newStrategicOptions && newStrategicOptions.length > 0) {
+            useScenarioStore
+              .getState()
+              .updateStrategicOptions(newStrategicOptions);
+          }
 
           setScenarios(mappedScenarios);
           setScenariosToStore(mappedScenarios);
+
           const initialTabs: Record<number, string> = {};
           mappedScenarios.forEach((s) => {
             initialTabs[s.id] = "narrative";

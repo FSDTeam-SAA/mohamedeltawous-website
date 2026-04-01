@@ -81,10 +81,10 @@ export interface AxesData {
   axisA: AxisResult;
   axisB: AxisResult;
   scenarios?: {
-    topRight: { name: string; summary: string };
-    topLeft: { name: string; summary: string };
-    bottomLeft: { name: string; summary: string };
-    bottomRight: { name: string; summary: string };
+    topRight: { name: string; summary: string; implications?: string };
+    topLeft: { name: string; summary: string; implications?: string };
+    bottomLeft: { name: string; summary: string; implications?: string };
+    bottomRight: { name: string; summary: string; implications?: string };
   };
 }
 
@@ -155,7 +155,14 @@ export interface ScenarioResult {
 export interface ScenariosResponse {
   success: boolean;
   data: {
+    company: {
+      name: string;
+      focalQuestion: string;
+      horizonYear: string;
+    };
     scenarios: ScenarioResult[];
+    strategicOptions: string[];
+    conversationHistory: { role: string; content: string }[];
   };
 }
 
