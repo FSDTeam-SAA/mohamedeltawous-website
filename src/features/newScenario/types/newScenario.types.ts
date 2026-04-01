@@ -36,6 +36,12 @@ export interface ClassifyPayload {
   conversationHistory: unknown[]; // Using unknown[] for now as it's empty
 }
 
+export interface PredeterminedItem {
+  force: string;
+  category: string;
+  rationale: string;
+}
+
 export interface UncertaintyItem {
   force: string;
   impact: string;
@@ -45,7 +51,7 @@ export interface UncertaintyItem {
 export interface ClassifyResponse {
   success: boolean;
   data: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   };
   history: { role: string; content: string }[];
@@ -60,7 +66,7 @@ export interface AxesPayload {
     horizonYear: string;
   };
   classification: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   };
   conversationHistory: { role: string; content: string }[];
@@ -210,7 +216,7 @@ export interface ReportPayload {
       horizonYear: string;
     };
     classification: {
-      predetermined: string[];
+      predetermined: (string | PredeterminedItem)[];
       uncertainties: UncertaintyItem[];
     };
     axes: {
@@ -238,7 +244,7 @@ export interface ScenarioState {
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
   classification: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   } | null;
   axes: AxesData | null;
@@ -246,15 +252,19 @@ export interface ScenarioState {
   strategicOptions: string[];
   windtunnelData: WindtunnelResult | null;
   conversationHistory: { role: "user" | "assistant"; content: string }[];
+  isClassificationModalOpen: boolean;
+  isAxesModalOpen: boolean;
 
   // Actions
   setStep: (step: number) => void;
+  setClassificationModal: (isOpen: boolean) => void;
+  setAxesModal: (isOpen: boolean) => void;
   updateCompany: (company: Partial<CompanyInfo>) => void;
   addForce: (force: Omit<DrivingForce, "id" | "formatted">) => void;
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
   setClassification: (data: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   }) => void;
   updateAxes: (axes: AxesData) => void;

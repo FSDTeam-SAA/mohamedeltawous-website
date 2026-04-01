@@ -28,9 +28,14 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
   ],
   windtunnelData: null,
   conversationHistory: [],
+  isClassificationModalOpen: false,
+  isAxesModalOpen: false,
 
   // Actions
   setStep: (step: number) => set({ currentStep: step }),
+  setClassificationModal: (isOpen: boolean) =>
+    set({ isClassificationModalOpen: isOpen }),
+  setAxesModal: (isOpen: boolean) => set({ isAxesModalOpen: isOpen }),
 
   updateCompany: (companyUpdate) =>
     set((state) => ({
@@ -60,7 +65,13 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
     })),
 
   updateMovingFactors: (factors) => set({ movingFactors: factors }),
-  setClassification: (data) => set({ classification: data }),
+  setClassification: (data: {
+    predetermined: (
+      | import("../types/newScenario.types").PredeterminedItem
+      | string
+    )[];
+    uncertainties: import("../types/newScenario.types").UncertaintyItem[];
+  }) => set({ classification: data }),
   updateAxes: (axes) => set({ axes }),
   setScenarios: (scenarios) => set({ scenarios }),
   updateStrategicOptions: (options) => set({ strategicOptions: options }),
@@ -88,5 +99,7 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       ],
       windtunnelData: null,
       conversationHistory: [],
+      isClassificationModalOpen: false,
+      isAxesModalOpen: false,
     }),
 }));

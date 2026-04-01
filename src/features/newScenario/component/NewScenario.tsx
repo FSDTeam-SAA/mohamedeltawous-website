@@ -5,7 +5,6 @@ import { useScenarioStore } from "../store/useScenarioStore";
 import { useClassifyWorkshop, useGenerateAxes } from "../hooks/useNewScenario";
 import ForceClassificationModal from "./ForceClassificationModal";
 import ScenarioAxesModal from "./ScenarioAxesModal";
-import { AxesData, ClassifyResponse } from "../types/newScenario.types";
 import ScenarioResultView from "./ScenarioResultView";
 import ScenarioMatrixView from "./ScenarioMatrixView";
 import {
@@ -20,6 +19,7 @@ import {
   Zap,
   Loader2,
   CheckCircle2,
+  LayoutGrid,
 } from "lucide-react";
 
 const PREDEFINED_CATEGORIES = [
@@ -47,6 +47,11 @@ export default function NewScenario() {
     addHistory,
     updateAxes,
     setClassification,
+    classification,
+    isClassificationModalOpen,
+    isAxesModalOpen,
+    setClassificationModal,
+    setAxesModal,
   } = useScenarioStore();
 
   const { mutateAsync: classifyWorker, isPending: isClassifying } =
@@ -56,14 +61,6 @@ export default function NewScenario() {
 
   const [dfError, setDfError] = useState("");
   const [customCatInput, setCustomCatInput] = useState("");
-
-  const [isClassificationModalOpen, setIsClassificationModalOpen] =
-    useState(false);
-  const [classificationData, setClassificationData] =
-    useState<ClassifyResponse | null>(null);
-
-  const [isAxesModalOpen, setIsAxesModalOpen] = useState(false);
-  const [axesData, setAxesData] = useState<AxesData | null>(null);
 
   const handleToggleCategory = (cat: string) => {
     const exists = movingFactors.find(
@@ -327,11 +324,11 @@ export default function NewScenario() {
             <div className="mt-10 flex justify-between items-center">
               <button
                 type="button"
-                disabled
-                className="text-slate-300 font-bold text-sm uppercase tracking-widest cursor-not-allowed flex items-center gap-2"
+                onClick={() => window.history.back()}
+                className="text-slate-400 hover:text-[#0F172A] font-bold text-sm uppercase tracking-widest transition-all flex items-center gap-2"
               >
                 <ChevronLeft className="w-4 h-4" />
-                Back
+                Cancel
               </button>
 
               <button
@@ -616,14 +613,27 @@ export default function NewScenario() {
 
             {/* Buttons */}
             <div className="mt-12 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="bg-slate-100 text-[#0F172A] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-200 transition-all active:scale-95"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Back
-              </button>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="bg-slate-100 text-[#0F172A] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-200 transition-all active:scale-95"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                  Back
+                </button>
+
+                {classification && (
+                  <button
+                    type="button"
+                    onClick={() => setClassificationModal(true)}
+                    className="bg-blue-50 text-blue-700 px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-100 transition-all active:scale-95 border border-blue-100"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    Review Analysis
+                  </button>
+                )}
+              </div>
 
               <button
                 type="button"
@@ -644,6 +654,12 @@ export default function NewScenario() {
                   }
 
                   setDfError("");
+
+                  // If we already have classification, just open it
+                  if (classification) {
+                    setClassificationModal(true);
+                    return;
+                  }
 
                   // 2) Get full data
                   const state = useScenarioStore.getState();
@@ -679,15 +695,43 @@ export default function NewScenario() {
                       addHistory("user", "Classify forces.");
                       addHistory("assistant", JSON.stringify(response.data));
 
+                      addHistory("assistant", JSON.stringify(response.data));
+
                       setClassification(response.data);
-                      setClassificationData(response);
-                      setIsClassificationModalOpen(true);
+                      setClassificationModal(true);
                     }
-                  } catch (err) {
+                  } catch (err: unknown) {
                     console.error("API submission failed:", err);
-                    setDfError(
-                      "Failed to submit moving factors. Please try again.",
-                    );
+                    let errorMessage =
+                      "Failed to submit moving factors. Please check your network and try again.";
+
+                    if (err instanceof Error) {
+                      errorMessage = err.message;
+                    } else if (
+                      typeof err === "object" &&
+                      err !== null &&
+                      "response" in err
+                    ) {
+                      const axiosError = err as {
+                        response: { data?: { message?: string } };
+                      };
+                      errorMessage =
+                        axiosError.response.data?.message || errorMessage;
+                    }
+
+                    if (
+                      errorMessage.includes(
+                        "Failed to parse AI response into JSON after retry",
+                      )
+                    ) {
+                      setDfError(
+                        "The AI encountered a complex data pattern. Please go back to Step 2 to refine your company description or try simplifying your factor descriptions here.",
+                      );
+                    } else {
+                      setDfError(
+                        `${errorMessage} Please refinement your inputs or go back to Step 2 to retry.`,
+                      );
+                    }
                   }
                 }}
                 disabled={isClassifying}
@@ -709,29 +753,27 @@ export default function NewScenario() {
           </div>
         )}
         {/* Classification Modal */}
-        {classificationData && (
+        {classification && (
           <ForceClassificationModal
             isOpen={isClassificationModalOpen}
-            onClose={() => setIsClassificationModalOpen(false)}
-            fullResponse={classificationData}
+            onClose={() => setClassificationModal(false)}
+            fullResponse={{ success: true, data: classification, history: [] }}
             generateAxes={generateAxes}
             isGeneratingAxes={isGeneratingAxes}
             onAxesGenerated={(data) => {
-              // History for "Select axes" is handled inside ForceClassificationModal
-              updateAxes(data); // Save to store
-              setAxesData(data);
-              setIsAxesModalOpen(true);
+              updateAxes(data);
+              setAxesModal(true);
             }}
           />
         )}
         {/* Scenario Axes Modal */}
-        {axesData && (
+        {useScenarioStore.getState().axes && (
           <ScenarioAxesModal
             isOpen={isAxesModalOpen}
-            onClose={() => setIsAxesModalOpen(false)}
-            data={axesData}
+            onClose={() => setAxesModal(false)}
+            data={useScenarioStore.getState().axes!}
             onScenariosGenerated={() => {
-              // Navigation to stats 4 handled via setStep(4) in modal
+              // Navigation handled elsewhere
             }}
           />
         )}

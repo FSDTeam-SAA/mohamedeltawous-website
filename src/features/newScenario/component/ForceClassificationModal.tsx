@@ -9,6 +9,7 @@ import {
   BarChart3,
   CheckCircle2,
   Loader2,
+  ChevronLeft,
 } from "lucide-react";
 import {
   AxesPayload,
@@ -16,6 +17,7 @@ import {
   AxesData,
   ClassifyResponse,
   UncertaintyItem,
+  PredeterminedItem,
 } from "../types/newScenario.types";
 import { useScenarioStore } from "../store/useScenarioStore";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
@@ -39,11 +41,12 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
   onClose,
   fullResponse,
   generateAxes,
-  isGeneratingAxes: isPending,
+  isGeneratingAxes,
   onAxesGenerated,
 }) => {
   const { data } = fullResponse;
   const { company, setStep, addHistory } = useScenarioStore();
+  const [error, setError] = React.useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -108,6 +111,38 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-8 space-y-12">
+          {error && (
+            <div className="bg-rose-50 border border-rose-100 rounded-3xl p-8 flex flex-col items-center text-center animate-in slide-in-from-top-4 duration-500">
+              <div className="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mb-6">
+                <AlertCircle className="w-8 h-8 text-rose-600" />
+              </div>
+              <h4 className="text-xl font-black text-rose-900 uppercase tracking-tighter mb-2">
+                Mapping Synthesis Failed
+              </h4>
+              <p className="text-slate-600 font-medium leading-relaxed max-w-md">
+                {error}
+              </p>
+              <div className="mt-8 flex gap-4 w-full justify-center">
+                <button
+                  onClick={onClose}
+                  className="px-8 py-3 bg-white border-2 border-rose-100 text-rose-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-rose-50 transition-all active:scale-95 cursor-pointer"
+                >
+                  Back to Step 3
+                </button>
+                <button
+                  onClick={() => setStep(2)}
+                  className="px-8 py-3 bg-rose-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer"
+                >
+                  Back to Step 2
+                </button>
+              </div>
+              <p className="mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Hint: Refine your company profile or simplify factor
+                descriptions.
+              </p>
+            </div>
+          )}
+
           {/* Predetermined Forces Section */}
           <section>
             <div className="flex items-center gap-2 mb-6">
@@ -120,8 +155,12 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
             </div>
 
             <div className="grid gap-4">
-              {data.predetermined.map((item) => (
-                <ForceCard key={item} item={item} type="predetermined" />
+              {data.predetermined.map((item, idx) => (
+                <ForceCard
+                  key={typeof item === "string" ? item : item.force + idx}
+                  item={item}
+                  type="predetermined"
+                />
               ))}
             </div>
           </section>
@@ -138,8 +177,12 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
             </div>
 
             <div className="grid gap-6">
-              {data.uncertainties.map((item) => (
-                <ForceCard key={item.force} item={item} type="uncertainty" />
+              {data.uncertainties.map((item, idx) => (
+                <ForceCard
+                  key={item.force + idx}
+                  item={item}
+                  type="uncertainty"
+                />
               ))}
             </div>
           </section>
@@ -149,14 +192,16 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
         <footer className="px-8 py-6 border-t border-slate-100 bg-white flex justify-end gap-3">
           <button
             onClick={onClose}
-            disabled={isPending}
-            className="px-6 py-3 rounded-xl text-sm font-bold text-[#0F172A] hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isGeneratingAxes}
+            className="px-6 py-3 rounded-xl text-sm font-bold text-[#0F172A] hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Close
+            <ChevronLeft className="w-4 h-4" />
+            Back to factors
           </button>
           <button
-            disabled={isPending}
+            disabled={isGeneratingAxes}
             onClick={async () => {
+              setError(null);
               try {
                 const payload = {
                   company: {
@@ -171,29 +216,29 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
                 };
 
                 const response = await generateAxes(payload);
-                console.log("Successfully generated axes.");
 
                 if (response?.data) {
                   addHistory("user", "Select axes.");
                   addHistory("assistant", JSON.stringify(response.data));
                   onAxesGenerated(response.data);
                 }
-                onClose();
-                setStep(4);
-              } catch (err) {
+              } catch (err: unknown) {
                 console.error("Axes generation failed:", err);
+                setError(
+                  "We encountered an issue while mapping your strategic axes. This often happens if the uncertainties are too similar. Please try refining your factor descriptions.",
+                );
               }
             }}
-            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center cursor-pointer"
+            className="px-8 py-3 rounded-xl text-sm font-bold bg-[#0F172A] text-white flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[180px] justify-center cursor-pointer"
           >
-            {isPending ? (
+            {isGeneratingAxes ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Processing...
               </>
             ) : (
               <>
-                Continue to Matrix
+                Confirm & Map Matrix
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -205,7 +250,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
 };
 
 interface ForceCardProps {
-  item: string | UncertaintyItem;
+  item: string | UncertaintyItem | PredeterminedItem;
   type: "predetermined" | "uncertainty";
 }
 
@@ -224,10 +269,15 @@ const ForceCard: React.FC<ForceCardProps> = ({ item, type }) => {
     } else {
       title = item;
     }
-  } else {
+  } else if ("unpredictability" in item) {
+    // UncertaintyItem
     title = item.force;
     text = item.unpredictability;
     impact = item.impact;
+  } else {
+    // PredeterminedItem
+    title = item.force;
+    text = item.rationale;
   }
 
   return (
