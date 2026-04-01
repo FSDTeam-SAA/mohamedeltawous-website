@@ -19,7 +19,7 @@ const MOCK_VIDEOS = [
     description:
       "Discover how our Strategic Decision platform guides you from uncertainty to high-conviction decision making, testing multiple futures.",
     date: "Oct 24, 2023",
-    src: "/videos/second-sight.mp4",
+    src: "/videos/second-sight.webm",
     thumbnail:
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
   },
@@ -97,7 +97,7 @@ export function DynamicVideoSection() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 mt-12 mb-16">
       {/* Video Player Container */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl group border border-gray-100 hover:border-gray-200 transition-colors duration-500">
+      <div className="relative w-full aspect-[16/9] md:aspect-[16/9] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl group border border-gray-100 hover:border-gray-200 transition-colors duration-500">
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div
