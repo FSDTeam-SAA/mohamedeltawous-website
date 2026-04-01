@@ -207,13 +207,10 @@ const ScenarioMatrixView: React.FC = () => {
     };
   };
 
-  // Scenarios derived from axes or store
-  const scenarioLabels = [
-    axes?.scenarios?.topLeft?.name || "Scenario A1+B1",
-    axes?.scenarios?.topRight?.name || "Scenario A1+B2",
-    axes?.scenarios?.bottomLeft?.name || "Scenario A2+B1",
-    axes?.scenarios?.bottomRight?.name || "Scenario A2+B2",
-  ];
+  // Extract labels directly from the `scenarios` store if available
+  const scenarioLabels = Array.from({ length: 4 }).map((_, idx) => {
+    return scenarios?.[idx]?.name || `Scenario ${idx + 1}`;
+  });
 
   return (
     <div className="w-full max-w-[1600px] mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
