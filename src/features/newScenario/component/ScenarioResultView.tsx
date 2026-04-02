@@ -12,6 +12,7 @@ import {
   X,
   Plus,
   Check,
+  ChevronLeft,
 } from "lucide-react";
 import { useScenarioStore } from "../store/useScenarioStore";
 import {
@@ -19,6 +20,7 @@ import {
   usePostWindtunnel,
 } from "../hooks/useNewScenario";
 import { ScenarioResult, WindtunnelPayload } from "../types/newScenario.types";
+import DataMismatchModal from "./DataMismatchModal";
 
 /**
  * Helper to truncate text to exactly N words.
@@ -55,6 +57,10 @@ const ScenarioResultView: React.FC = () => {
 
   const [scenarios, setScenarios] = useState<ScenarioResult[]>([]);
   const [activeTabs, setActiveTabs] = useState<Record<number, string>>({});
+  const [isMismatch, setIsMismatch] = useState(false);
+  const [mismatchVariant, setMismatchVariant] = useState<
+    "alignment" | "processing" | "structural"
+  >("alignment");
 
   // Modal State
   const [modalData, setModalData] = useState<{
@@ -95,16 +101,54 @@ const ScenarioResultView: React.FC = () => {
     console.log("Finalizing Workshop - Payload:", payload);
 
     try {
+      setIsMismatch(false);
       const response = await postWindtunnel(payload);
       console.log("Finalization Success - Response:", response);
+
+      // Validation: Check for presence of windTunnel data
+      if (!response?.data?.windTunnel) {
+        console.error(
+          "Data mismatch: No wind tunnel results returned from AI.",
+        );
+
+        // Specific check for structural mismatch (returning AxesData instead of WindtunnelResult)
+        const responseData = response?.data as unknown as
+          | Record<string, unknown>
+          | undefined;
+        if (responseData?.axisA && responseData?.axisB) {
+          setMismatchVariant("structural");
+          setIsMismatch(true);
+          return;
+        }
+
+        setMismatchVariant("processing");
+        setIsMismatch(true);
+        return;
+      }
+
       if (response?.success && response?.data) {
         setWindtunnelData(response.data);
         addHistory("user", "Run wind tunnel.");
         addHistory("assistant", JSON.stringify(response.data));
         setStep(5);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Finalization Failed - Error:", err);
+
+      const errorResponse = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const errorMessage =
+        errorResponse?.response?.data?.message || errorResponse?.message || "";
+      if (
+        errorMessage.includes(
+          "Failed to parse AI response into JSON after retry",
+        )
+      ) {
+        setMismatchVariant("processing");
+        setIsMismatch(true);
+      }
     }
   };
 
@@ -137,31 +181,57 @@ const ScenarioResultView: React.FC = () => {
           conversationHistory: conversationHistory,
         };
 
+        setIsMismatch(false);
         const response = await generateScenarios(payload);
 
-        if (response?.success && response?.data?.scenarios) {
-          const SCENARIO_TITLES = [
-            "Fintech Disruption Wave",
-            "Fragmented Ambition",
-            "Digital Surge, Local Roots",
-            "Relationship-Centric Fortress",
-          ];
+        // Validation: AI might return success but empty or missing data
+        if (
+          !response?.data?.scenarios ||
+          response.data.scenarios.length === 0
+        ) {
+          console.error("Data mismatch: No scenarios returned from AI.");
+          setMismatchVariant("alignment");
+          setIsMismatch(true);
+          return;
+        }
 
-          const mappedScenarios = response.data.scenarios.map((s, idx) => ({
-            ...s,
-            name: SCENARIO_TITLES[idx] || s.name,
-          }));
+        if (response?.success && response?.data?.scenarios) {
+          const mappedScenarios = response.data.scenarios;
+          const newStrategicOptions = response.data.strategicOptions;
+
+          if (newStrategicOptions && newStrategicOptions.length > 0) {
+            useScenarioStore
+              .getState()
+              .updateStrategicOptions(newStrategicOptions);
+          }
 
           setScenarios(mappedScenarios);
           setScenariosToStore(mappedScenarios);
+
           const initialTabs: Record<number, string> = {};
           mappedScenarios.forEach((s) => {
             initialTabs[s.id] = "narrative";
           });
           setActiveTabs(initialTabs);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Failed to generate detailed scenarios:", err);
+        const errorResponse = err as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
+        const errorMessage =
+          errorResponse?.response?.data?.message ||
+          errorResponse?.message ||
+          "";
+        if (
+          errorMessage.includes(
+            "Failed to parse AI response into JSON after retry",
+          )
+        ) {
+          setMismatchVariant("processing");
+          setIsMismatch(true);
+        }
       }
     };
 
@@ -201,25 +271,47 @@ const ScenarioResultView: React.FC = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-12">
-        <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-8 shadow-sm">
-          <AlertCircle className="w-10 h-10 text-red-600" />
+      <>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-12">
+          <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-8 shadow-sm">
+            <AlertCircle className="w-10 h-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-black text-[#0F172A] mb-4">
+            Scenario Synthesis Interrupted
+          </h2>
+          <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">
+            We encountered an issue during the AI generation process. This could
+            be due to a timeout or connection issue.
+          </p>
+          <button
+            onClick={() => globalThis.location.reload()}
+            className="px-10 py-4 bg-[#0F172A] text-white rounded-2xl font-bold flex items-center gap-2 hover:shadow-xl transition-all active:scale-95 cursor-pointer"
+          >
+            Retry Synthesis
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
-        <h2 className="text-2xl font-black text-[#0F172A] mb-4">
-          Scenario Synthesis Interrupted
-        </h2>
-        <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">
-          We encountered an issue during the AI generation process. This could
-          be due to a timeout or connection issue.
-        </p>
-        <button
-          onClick={() => globalThis.location.reload()}
-          className="px-10 py-4 bg-[#0F172A] text-white rounded-2xl font-bold flex items-center gap-2 hover:shadow-xl transition-all active:scale-95 cursor-pointer"
-        >
-          Retry Synthesis
-          <ArrowRight className="w-5 h-5" />
-        </button>
-      </div>
+
+        <DataMismatchModal
+          isOpen={isMismatch}
+          variant={mismatchVariant}
+          onClose={() => setIsMismatch(false)}
+          backStepLabel="Go back to Step 3"
+          onRetry={() => {
+            if (mismatchVariant === "processing") {
+              setIsMismatch(false);
+              // Trigger regeneration logic again
+            } else {
+              setIsMismatch(false);
+              handleFinalize();
+            }
+          }}
+          onRestart={() => {
+            setIsMismatch(false);
+            setStep(3);
+          }}
+        />
+      </>
     );
   }
 
@@ -251,7 +343,28 @@ const ScenarioResultView: React.FC = () => {
   ];
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto pb-20 animate-in fade-in duration-700">
+    <div className="w-full max-w-[1600px] mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <DataMismatchModal
+        isOpen={isMismatch}
+        variant={mismatchVariant}
+        onClose={() => setIsMismatch(false)}
+        backStepLabel="Go back to Step 3"
+        onRetry={() => {
+          setIsMismatch(false);
+          // If we haven't loaded scenarios yet, retry that.
+          // Otherwise, the user probably clicked 'Finalize' and that failed.
+          if (scenarios.length === 0) {
+            // triggerGeneration(); // need access to this
+          } else {
+            handleFinalize();
+          }
+        }}
+        onRestart={() => {
+          setIsMismatch(false);
+          setStep(3);
+        }}
+      />
+
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
         <div>
           <div className="flex items-center gap-3 mb-3">
@@ -275,6 +388,14 @@ const ScenarioResultView: React.FC = () => {
 
         <div className="flex items-center gap-4">
           <button
+            onClick={() => setStep(3)}
+            className="px-6 py-4 bg-white border border-slate-200 text-[#0F172A] rounded-2xl font-black text-sm uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            Back
+          </button>
+
+          <button
             onClick={handleFinalize}
             disabled={isFinalizing || scenarios.length === 0}
             className={`
@@ -297,44 +418,54 @@ const ScenarioResultView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-4 items-start">
-        {scenarios.map((s, idx) => {
-          const color = COLORS[idx % COLORS.length];
-          const activeTab = activeTabs[s.id] || "narrative";
+        {scenarios
+          .filter((s) => s.name && s.story) // Filter out metadata objects that aren't real scenarios
+          .map((s, idx) => {
+            const color = COLORS[idx % COLORS.length];
+            const activeTab = activeTabs[s.id] || "narrative";
 
-          return (
-            <div
-              key={s.id}
-              className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden flex flex-col group"
-            >
-              <div className={`h-2 w-full ${color.bg}`} />
+            return (
+              <div
+                key={s.id}
+                className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden flex flex-col group"
+              >
+                <div className={`h-2 w-full ${color.bg}`} />
 
-              <div className="p-10 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-8">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      {/* <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Scenario {String.fromCodePoint(65 + idx)}
-                      </span> */}
+                <div className="p-10 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-black text-[#0F172A] tracking-tight group-hover:text-blue-600 transition-colors">
+                          {s.name}
+                        </h2>
+                        <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-400 border border-slate-100 flex items-center gap-1.5 shadow-sm">
+                          <LayoutGrid className="w-3 h-3" />
+                          {s.combination === "A2+B1" && "Low / Low"}
+                          {s.combination === "A2+B2" && "Low / High"}
+                          {s.combination === "A1+B1" && "Low / High"}
+                          {s.combination === "A1+B2" && "High / High"}
+                        </span>
+                      </div>
                     </div>
-                    <h2 className="text-2xl font-black text-[#0F172A] tracking-tight group-hover:text-blue-600 transition-colors">
-                      {s.name}
-                    </h2>
                   </div>
-                </div>
 
-                {/* Tabs Implementation */}
-                <div className="flex gap-1 bg-slate-50 p-1.5 rounded-2xl mb-8 border border-slate-100/50">
-                  {[
-                    { id: "narrative", label: "Narrative", icon: Sparkles },
-                    { id: "implications", label: "Implications", icon: Target },
-                    { id: "signposts", label: "Signposts", icon: Search },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() =>
-                        setActiveTabs({ ...activeTabs, [s.id]: tab.id })
-                      }
-                      className={`
+                  {/* Tabs Implementation */}
+                  <div className="flex gap-1 bg-slate-50 p-1.5 rounded-2xl mb-8 border border-slate-100/50">
+                    {[
+                      { id: "narrative", label: "Narrative", icon: Sparkles },
+                      {
+                        id: "implications",
+                        label: "Implications",
+                        icon: Target,
+                      },
+                      { id: "signposts", label: "Signposts", icon: Search },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() =>
+                          setActiveTabs({ ...activeTabs, [s.id]: tab.id })
+                        }
+                        className={`
                         flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer
                         ${
                           activeTab === tab.id
@@ -342,85 +473,85 @@ const ScenarioResultView: React.FC = () => {
                             : "text-slate-400 hover:text-slate-600"
                         }
                       `}
-                    >
-                      <tab.icon className="w-3.5 h-3.5" />
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+                      >
+                        <tab.icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
 
-                {/* Tab Content */}
-                <div className="flex-1 min-h-[300px] flex flex-col">
-                  {activeTab === "narrative" && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <p className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-line text-justify italic border-l-4 border-slate-100 pl-6 py-2">
-                          {truncateText(s.story, 50).truncated}
-                        </p>
+                  {/* Tab Content */}
+                  <div className="flex-1 min-h-[300px] flex flex-col">
+                    {activeTab === "narrative" && (
+                      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex-1 flex flex-col">
+                        <div className="flex-1">
+                          <p className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-line text-justify italic border-l-4 border-slate-100 pl-6 py-2">
+                            {truncateText(s.story || "", 50).truncated}
+                          </p>
+                        </div>
+                        {truncateText(s.story || "", 50).needsMore && (
+                          <button
+                            onClick={() =>
+                              openModal(s, String.fromCodePoint(65 + idx))
+                            }
+                            className={`mt-4 w-fit flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${color.text} hover:opacity-70 transition-all cursor-pointer`}
+                          >
+                            <Plus className="w-3 h-3" />
+                            See More
+                          </button>
+                        )}
                       </div>
-                      {truncateText(s.story, 50).needsMore && (
-                        <button
-                          onClick={() =>
-                            openModal(s, String.fromCodePoint(65 + idx))
-                          }
-                          className={`mt-4 w-fit flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${color.text} hover:opacity-70 transition-all cursor-pointer`}
-                        >
-                          <Plus className="w-3 h-3" />
-                          See More
-                        </button>
-                      )}
-                    </div>
-                  )}
+                    )}
 
-                  {activeTab === "implications" && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex-1 flex flex-col">
-                      <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 flex-1">
-                        <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-widest mb-4">
-                          Strategic Implications
-                        </h4>
-                        <p className="text-slate-700 text-sm leading-relaxed font-semibold whitespace-pre-line">
-                          {truncateText(s.implications, 50).truncated}
-                        </p>
+                    {activeTab === "implications" && (
+                      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex-1 flex flex-col">
+                        <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 flex-1">
+                          <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-widest mb-4">
+                            Strategic Implications
+                          </h4>
+                          <p className="text-slate-700 text-sm leading-relaxed font-semibold whitespace-pre-line">
+                            {truncateText(s.implications || "", 50).truncated}
+                          </p>
+                        </div>
+                        {truncateText(s.implications || "", 50).needsMore && (
+                          <button
+                            onClick={() =>
+                              openModal(s, String.fromCodePoint(65 + idx))
+                            }
+                            className={`mt-4 w-fit flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${color.text} hover:opacity-70 transition-all cursor-pointer`}
+                          >
+                            <Plus className="w-3 h-3" />
+                            See More
+                          </button>
+                        )}
                       </div>
-                      {truncateText(s.implications, 50).needsMore && (
-                        <button
-                          onClick={() =>
-                            openModal(s, String.fromCodePoint(65 + idx))
-                          }
-                          className={`mt-4 w-fit flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${color.text} hover:opacity-70 transition-all cursor-pointer`}
-                        >
-                          <Plus className="w-3 h-3" />
-                          See More
-                        </button>
-                      )}
-                    </div>
-                  )}
+                    )}
 
-                  {activeTab === "signposts" && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <ul className="space-y-4">
-                        {s.signposts.map((post, pIdx) => (
-                          <li key={pIdx} className="flex gap-4 group/item">
-                            <div
-                              className={`w-6 h-6 rounded-lg ${color.light} flex items-center justify-center shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform`}
-                            >
+                    {activeTab === "signposts" && (
+                      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <ul className="space-y-4">
+                          {s.signposts?.map((post, pIdx) => (
+                            <li key={pIdx} className="flex gap-4 group/item">
                               <div
-                                className={`w-1.5 h-1.5 rounded-full ${color.bg}`}
-                              />
-                            </div>
-                            <span className="text-sm font-medium text-slate-600 leading-relaxed">
-                              {post}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                                className={`w-6 h-6 rounded-lg ${color.light} flex items-center justify-center shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform`}
+                              >
+                                <div
+                                  className={`w-1.5 h-1.5 rounded-full ${color.bg}`}
+                                />
+                              </div>
+                              <span className="text-sm font-medium text-slate-600 leading-relaxed">
+                                {post}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       {/* Full Text Modal */}
@@ -570,12 +701,12 @@ const ScenarioResultView: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Professional Strategic Analysis
               </span>
-              <button
+              {/* <button
                 onClick={closeModal}
                 className="px-10 py-3.5 bg-[#0F172A] text-white rounded-xl font-bold text-sm hover:shadow-2xl hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer shadow-lg shadow-blue-900/10"
               >
                 Dismiss Case Study
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

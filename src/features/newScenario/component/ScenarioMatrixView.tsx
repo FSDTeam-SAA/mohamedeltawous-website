@@ -18,8 +18,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { useExportReport } from "../hooks/useNewScenario";
-import { ReportPayload } from "../types/newScenario.types";
+import { ReportPayload, AxisResult } from "../types/newScenario.types";
 import { generatePdfFromMarkdown } from "../utils/generatePdfFromMarkdown";
+import { ChevronLeft } from "lucide-react";
 
 /**
  * Helper to truncate text to exactly N words.
@@ -33,6 +34,37 @@ const truncateText = (text: string, limit: number) => {
   };
 };
 
+/**
+ * Helper to ensure a value is a string array.
+ * Robustly handles AI-generated stringified arrays with single quotes.
+ */
+const ensureArray = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string") return [];
+
+  try {
+    // Attempt to parse as JSON (handles double quotes)
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {
+    // Fallback for single-quoted stringified arrays like AI often produces
+    try {
+      // Replace single quotes surrounding items with double quotes
+      // and remove the surrounding brackets if needed
+      const normalized = value
+        .trim()
+        .replace(/^\[|\]$/g, "") // Remove brackets
+        .split(/','|', '|' ,/) // Split by common variants of AI-generated separators
+        .map((item) => item.replace(/^'|'$/g, "").trim()); // Trim individual quotes and whitespace
+
+      if (normalized.length > 0) return normalized;
+    } catch {
+      return [value]; // Return as single-item array as last resort
+    }
+  }
+  return [value];
+};
+
 const ScenarioMatrixView: React.FC = () => {
   const {
     windtunnelData,
@@ -42,6 +74,7 @@ const ScenarioMatrixView: React.FC = () => {
     setStep,
     classification,
     scenarios,
+    resetStore,
   } = useScenarioStore();
 
   const { mutateAsync: exportReport, isPending: isExporting } =
@@ -57,6 +90,19 @@ const ScenarioMatrixView: React.FC = () => {
 
     setExportError(null);
 
+    // 1. Mandatory Data Guarantee for Report
+    const pA1 = axes.axisA.poleA1 || axes.axisA.pole1 || "";
+    const pA2 = axes.axisA.poleA2 || axes.axisA.pole2 || "";
+    const pB1 = axes.axisB.poleB1 || axes.axisB.pole1 || "";
+    const pB2 = axes.axisB.poleB2 || axes.axisB.pole2 || "";
+
+    if (!pA1 || !pA2 || !pB1 || !pB2) {
+      setExportError(
+        "Strategic poles are missing. Please re-check the Discovery step.",
+      );
+      return;
+    }
+
     const payload: ReportPayload = {
       workshopState: {
         company: {
@@ -67,12 +113,24 @@ const ScenarioMatrixView: React.FC = () => {
           horizonYear: company.horizonYear,
         },
         classification: {
-          predetermined: classification.predetermined,
-          uncertainties: classification.uncertainties,
+          predetermined: classification.predetermined.map((p) =>
+            typeof p === "string" ? p : p.force,
+          ),
+          uncertainties: classification.uncertainties.map((u) => u.force),
         },
         axes: {
-          axisA: axes.axisA,
-          axisB: axes.axisB,
+          axisA: {
+            label: axes.axisA.label,
+            poleA1: pA1,
+            poleA2: pA2,
+            reason: axes.axisA.reason,
+          } as AxisResult,
+          axisB: {
+            label: axes.axisB.label,
+            poleB1: pB1,
+            poleB2: pB2,
+            reason: axes.axisB.reason,
+          } as AxisResult,
         },
         scenarios: {
           scenarios: scenarios,
@@ -85,6 +143,8 @@ const ScenarioMatrixView: React.FC = () => {
         },
       },
     };
+
+    console.log("Exporting Report with EXACT User Example Payload:", payload);
 
     try {
       const response = await exportReport(payload);
@@ -99,6 +159,7 @@ const ScenarioMatrixView: React.FC = () => {
           response.data.fullReportMarkdown,
           filename,
         );
+        resetStore(); // Reset store only after successful PDF generation
       } else {
         setExportError(
           "The server returned an empty report. Please try again.",
@@ -235,29 +296,39 @@ const ScenarioMatrixView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex items-center gap-4">
           <button
-            onClick={handleExport}
-            disabled={isExporting}
-            className="px-6 py-4 bg-[#0F172A] text-white rounded-2xl font-black text-sm flex items-center gap-3 hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-blue-900/20 group cursor-pointer"
+            onClick={() => setStep(4)}
+            className="px-6 py-4 bg-white border border-slate-200 text-[#0F172A] rounded-2xl font-black text-sm uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
-            {isExporting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Preparing Report...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5 group-hover:bounce" />
-                Export Full Strategic Report
-              </>
-            )}
+            <ChevronLeft className="w-5 h-5" />
+            Back
           </button>
-          {exportError && (
-            <p className="text-xs font-bold text-rose-500 max-w-[260px] text-right">
-              {exportError}
-            </p>
-          )}
+
+          <div className="flex flex-col items-end gap-2 text-right">
+            <button
+              onClick={handleExport}
+              disabled={isExporting}
+              className="px-6 py-4 bg-[#0F172A] text-white rounded-2xl font-black text-sm flex items-center gap-3 hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-blue-900/20 group cursor-pointer"
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Preparing Report...
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5 group-hover:bounce" />
+                  Export Full Strategic Report
+                </>
+              )}
+            </button>
+            {exportError && (
+              <p className="text-xs font-bold text-rose-500 max-w-[260px] text-right">
+                {exportError}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -350,44 +421,53 @@ const ScenarioMatrixView: React.FC = () => {
                         {option}
                       </p>
                     </td>
-                    {windtunnelData.windTunnel[optIdx]?.map((cell, sceIdx) => {
-                      const styles = getRatingStyles(cell.rating);
+                    {windtunnelData?.windTunnel?.[optIdx] ? (
+                      windtunnelData.windTunnel[optIdx].map((cell, sceIdx) => {
+                        const styles = getRatingStyles(cell.rating);
 
-                      return (
-                        <td
-                          key={sceIdx}
-                          className="p-6 border-r border-slate-100 text-center transition-all duration-300"
-                        >
-                          <div className="flex flex-col items-center gap-4">
-                            <span
-                              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles.bg} ${styles.text} ${styles.border} shadow-sm`}
-                            >
-                              {cell.rating}
-                            </span>
-                            <div className="space-y-2">
-                              <p className="text-xs text-slate-500 font-semibold leading-relaxed max-w-[180px]">
-                                {truncateText(cell.reasoning, 25).truncated}
-                              </p>
-                              {truncateText(cell.reasoning, 25).needsMore && (
-                                <button
-                                  onClick={() =>
-                                    openMatrixModal(
-                                      option,
-                                      scenarioLabels[sceIdx],
-                                      cell.reasoning,
-                                      cell.rating,
-                                    )
-                                  }
-                                  className={`text-[10px] font-black uppercase tracking-widest ${styles.text} hover:opacity-70 transition-all cursor-pointer`}
-                                >
-                                  See Analysis
-                                </button>
-                              )}
+                        return (
+                          <td
+                            key={sceIdx}
+                            className="p-6 border-r border-slate-100 text-center transition-all duration-300"
+                          >
+                            <div className="flex flex-col items-center gap-4">
+                              <span
+                                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles.bg} ${styles.text} ${styles.border} shadow-sm`}
+                              >
+                                {cell.rating}
+                              </span>
+                              <div className="space-y-2">
+                                <p className="text-xs text-slate-500 font-semibold leading-relaxed max-w-[180px]">
+                                  {truncateText(cell.reasoning, 25).truncated}
+                                </p>
+                                {truncateText(cell.reasoning, 25).needsMore && (
+                                  <button
+                                    onClick={() =>
+                                      openMatrixModal(
+                                        option,
+                                        scenarioLabels[sceIdx],
+                                        cell.reasoning,
+                                        cell.rating,
+                                      )
+                                    }
+                                    className={`text-[10px] font-black uppercase tracking-widest ${styles.text} hover:opacity-70 transition-all cursor-pointer`}
+                                  >
+                                    See Analysis
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                      );
-                    })}
+                          </td>
+                        );
+                      })
+                    ) : (
+                      <td
+                        colSpan={4}
+                        className="p-6 text-center text-slate-400 italic"
+                      >
+                        No analysis data for this option.
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -410,16 +490,18 @@ const ScenarioMatrixView: React.FC = () => {
             </p>
 
             <ul className="space-y-6 flex-1">
-              {windtunnelData.robustMoves.noRegret.map((move, idx) => (
-                <li key={idx} className="flex gap-4 items-start">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700 leading-relaxed">
-                    {move}
-                  </span>
-                </li>
-              ))}
+              {ensureArray(windtunnelData.robustMoves.noRegret).map(
+                (move, idx) => (
+                  <li key={idx} className="flex gap-4 items-start">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-700 leading-relaxed">
+                      {move}
+                    </span>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
 
@@ -436,16 +518,18 @@ const ScenarioMatrixView: React.FC = () => {
             </p>
 
             <ul className="space-y-6 flex-1">
-              {windtunnelData.robustMoves.keepOpen.map((move, idx) => (
-                <li key={idx} className="flex gap-4 items-start">
-                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <Eye className="w-3 h-3 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700 leading-relaxed">
-                    {move}
-                  </span>
-                </li>
-              ))}
+              {ensureArray(windtunnelData.robustMoves.keepOpen).map(
+                (move, idx) => (
+                  <li key={idx} className="flex gap-4 items-start">
+                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <Eye className="w-3 h-3 text-blue-600" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-700 leading-relaxed">
+                      {move}
+                    </span>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
 
@@ -462,16 +546,18 @@ const ScenarioMatrixView: React.FC = () => {
             </p>
 
             <ul className="space-y-6 flex-1">
-              {windtunnelData.robustMoves.defer.map((move, idx) => (
-                <li key={idx} className="flex gap-4 items-start">
-                  <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <AlertCircle className="w-3 h-3 text-rose-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700 leading-relaxed">
-                    {move}
-                  </span>
-                </li>
-              ))}
+              {ensureArray(windtunnelData.robustMoves.defer).map(
+                (move, idx) => (
+                  <li key={idx} className="flex gap-4 items-start">
+                    <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <AlertCircle className="w-3 h-3 text-rose-600" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-700 leading-relaxed">
+                      {move}
+                    </span>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         </div>
@@ -509,7 +595,7 @@ const ScenarioMatrixView: React.FC = () => {
                 onClick={closeMatrixModal}
                 className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#0F172A] hover:bg-slate-100 transition-all active:scale-95 group"
               >
-                <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300 cursor-pointer" />
               </button>
             </div>
 
@@ -559,12 +645,12 @@ const ScenarioMatrixView: React.FC = () => {
 
             {/* Modal Footer */}
             <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50 flex justify-end">
-              <button
+              {/* <button
                 onClick={closeMatrixModal}
                 className="px-8 py-3 bg-[#0F172A] text-white rounded-xl font-bold text-sm hover:shadow-2xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-blue-900/10"
               >
                 Close Analysis
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AxisResult } from "../types/newScenario.types";
+import { AxisResult, ScenarioResult } from "../types/newScenario.types";
 import {
   Info,
   ArrowUp,
@@ -10,15 +10,23 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+interface ScenarioMatrixItem {
+  name: string;
+  summary?: string;
+  implications?: string;
+}
+
 interface StrategicMatrixChartProps {
   axisA: AxisResult; // Y-axis (Vertical)
   axisB: AxisResult; // X-axis (Horizontal)
-  scenarios?: {
-    topRight: { name: string; summary: string };
-    topLeft: { name: string; summary: string };
-    bottomLeft: { name: string; summary: string };
-    bottomRight: { name: string; summary: string };
-  };
+  scenarios?:
+    | {
+        topRight: { name: string; summary: string; implications?: string };
+        topLeft: { name: string; summary: string; implications?: string };
+        bottomLeft: { name: string; summary: string; implications?: string };
+        bottomRight: { name: string; summary: string; implications?: string };
+      }
+    | ScenarioResult[];
 }
 
 const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
@@ -26,6 +34,50 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
   axisB,
   scenarios,
 }) => {
+  // Helper to map flat array to quadrants if necessary
+  const getMappedScenarios = () => {
+    if (!scenarios) return null;
+    if (!Array.isArray(scenarios)) return scenarios;
+
+    // Mapping based on A2/A1 (Vertical) and B2/B1 (Horizontal)
+    // Top Left: A2 + B1
+    // Top Right: A2 + B2
+    // Bottom Left: A1 + B1
+    // Bottom Right: A1 + B2
+    return {
+      topLeft: (scenarios.find(
+        (s) => s.combination === "A2+B1",
+      ) as ScenarioMatrixItem) || {
+        name: "Scenario I",
+        summary: "",
+        implications: "",
+      },
+      topRight: (scenarios.find(
+        (s) => s.combination === "A2+B2",
+      ) as ScenarioMatrixItem) || {
+        name: "Scenario II",
+        summary: "",
+        implications: "",
+      },
+      bottomLeft: (scenarios.find(
+        (s) => s.combination === "A1+B1",
+      ) as ScenarioMatrixItem) || {
+        name: "Scenario III",
+        summary: "",
+        implications: "",
+      },
+      bottomRight: (scenarios.find(
+        (s) => s.combination === "A1+B2",
+      ) as ScenarioMatrixItem) || {
+        name: "Scenario IV",
+        summary: "",
+        implications: "",
+      },
+    };
+  };
+
+  const mapped = getMappedScenarios();
+
   return (
     <div className="w-full flex flex-col items-center justify-center p-4 sm:p-12 overflow-visible min-h-[700px]">
       <div className="relative w-full max-w-[28rem] aspect-square mx-auto">
@@ -34,41 +86,41 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
           {/* Top Left Quadrant */}
           <div className="bg-gradient-to-br from-amber-50/70 to-transparent p-6 flex flex-col items-center justify-center text-center border-b border-r border-slate-100 group relative">
             <h4 className="text-sm sm:text-base font-black text-amber-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
-              {scenarios?.topLeft?.name || "Scenario I"}
+              {mapped?.topLeft?.name || "Scenario I"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
-              {scenarios?.topLeft?.summary}
-            </p>
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+              {mapped?.topLeft?.summary || mapped?.topLeft?.implications || ""}
+            </p> */}
           </div>
 
           {/* Top Right Quadrant */}
           <div className="bg-gradient-to-bl from-emerald-50/70 to-transparent p-6 flex flex-col items-center justify-center text-center border-b border-slate-100 group relative">
             <h4 className="text-sm sm:text-base font-black text-emerald-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
-              {scenarios?.topRight?.name || "Scenario II"}
+              {mapped?.topRight?.name || "Scenario II"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
-              {scenarios?.topRight?.summary}
-            </p>
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+              {mapped?.topRight?.summary || mapped?.topRight?.implications || ""}
+            </p> */}
           </div>
 
           {/* Bottom Left Quadrant */}
           <div className="bg-gradient-to-tr from-rose-50/70 to-transparent p-6 flex flex-col items-center justify-center text-center border-r border-slate-100 group relative">
             <h4 className="text-sm sm:text-base font-black text-rose-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
-              {scenarios?.bottomLeft?.name || "Scenario III"}
+              {mapped?.bottomLeft?.name || "Scenario III"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
-              {scenarios?.bottomLeft?.summary}
-            </p>
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+              {mapped?.bottomLeft?.summary || mapped?.bottomLeft?.implications || ""}
+            </p> */}
           </div>
 
           {/* Bottom Right Quadrant */}
           <div className="bg-gradient-to-tl from-blue-50/70 to-transparent p-6 flex flex-col items-center justify-center text-center group relative">
             <h4 className="text-sm sm:text-base font-black text-blue-600 mb-2 uppercase tracking-wide group-hover:scale-105 transition-transform z-10">
-              {scenarios?.bottomRight?.name || "Scenario IV"}
+              {mapped?.bottomRight?.name || "Scenario IV"}
             </h4>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
-              {scenarios?.bottomRight?.summary}
-            </p>
+            {/* <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 leading-relaxed px-2 sm:px-4 opacity-80 z-10 line-clamp-4">
+              {mapped?.bottomRight?.summary || mapped?.bottomRight?.implications || ""}
+            </p> */}
           </div>
 
           {/* Internal Axes Dividers */}

@@ -95,7 +95,7 @@ export const exportReport = async (
 ): Promise<ReportResponse> => {
   try {
     const response = await axiosInstance.post(`/workshop/report`, data, {
-      timeout: 240000,
+      timeout: 350000,
     });
     return response.data;
   } catch (error: unknown) {

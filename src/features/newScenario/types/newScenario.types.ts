@@ -36,6 +36,12 @@ export interface ClassifyPayload {
   conversationHistory: unknown[]; // Using unknown[] for now as it's empty
 }
 
+export interface PredeterminedItem {
+  force: string;
+  category: string;
+  rationale: string;
+}
+
 export interface UncertaintyItem {
   force: string;
   impact: string;
@@ -45,7 +51,7 @@ export interface UncertaintyItem {
 export interface ClassifyResponse {
   success: boolean;
   data: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   };
   history: { role: string; content: string }[];
@@ -60,7 +66,7 @@ export interface AxesPayload {
     horizonYear: string;
   };
   classification: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   };
   conversationHistory: { role: string; content: string }[];
@@ -81,10 +87,10 @@ export interface AxesData {
   axisA: AxisResult;
   axisB: AxisResult;
   scenarios?: {
-    topRight: { name: string; summary: string };
-    topLeft: { name: string; summary: string };
-    bottomLeft: { name: string; summary: string };
-    bottomRight: { name: string; summary: string };
+    topRight: { name: string; summary: string; implications?: string };
+    topLeft: { name: string; summary: string; implications?: string };
+    bottomLeft: { name: string; summary: string; implications?: string };
+    bottomRight: { name: string; summary: string; implications?: string };
   };
 }
 
@@ -146,7 +152,7 @@ export interface ScenariosPayload {
 export interface ScenarioResult {
   id: number;
   name: string;
-  combination: string;
+  combination?: string;
   story: string;
   implications: string;
   signposts: string[];
@@ -155,7 +161,14 @@ export interface ScenarioResult {
 export interface ScenariosResponse {
   success: boolean;
   data: {
+    company: {
+      name: string;
+      focalQuestion: string;
+      horizonYear: string;
+    };
     scenarios: ScenarioResult[];
+    strategicOptions: string[];
+    conversationHistory: { role: string; content: string }[];
   };
 }
 
@@ -204,7 +217,7 @@ export interface ReportPayload {
     };
     classification: {
       predetermined: string[];
-      uncertainties: UncertaintyItem[];
+      uncertainties: string[];
     };
     axes: {
       axisA: AxisResult;
@@ -231,7 +244,7 @@ export interface ScenarioState {
   forces: DrivingForce[];
   movingFactors: MovingFactor[];
   classification: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   } | null;
   axes: AxesData | null;
@@ -239,15 +252,19 @@ export interface ScenarioState {
   strategicOptions: string[];
   windtunnelData: WindtunnelResult | null;
   conversationHistory: { role: "user" | "assistant"; content: string }[];
+  isClassificationModalOpen: boolean;
+  isAxesModalOpen: boolean;
 
   // Actions
   setStep: (step: number) => void;
+  setClassificationModal: (isOpen: boolean) => void;
+  setAxesModal: (isOpen: boolean) => void;
   updateCompany: (company: Partial<CompanyInfo>) => void;
   addForce: (force: Omit<DrivingForce, "id" | "formatted">) => void;
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
   setClassification: (data: {
-    predetermined: string[];
+    predetermined: (string | PredeterminedItem)[];
     uncertainties: UncertaintyItem[];
   }) => void;
   updateAxes: (axes: AxesData) => void;
