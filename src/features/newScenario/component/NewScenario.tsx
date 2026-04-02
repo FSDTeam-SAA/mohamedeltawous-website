@@ -52,6 +52,7 @@ export default function NewScenario() {
     isAxesModalOpen,
     setClassificationModal,
     setAxesModal,
+    axes,
   } = useScenarioStore();
 
   const { mutateAsync: classifyWorker, isPending: isClassifying } =
@@ -767,11 +768,11 @@ export default function NewScenario() {
           />
         )}
         {/* Scenario Axes Modal */}
-        {useScenarioStore.getState().axes && (
+        {axes && (
           <ScenarioAxesModal
             isOpen={isAxesModalOpen}
             onClose={() => setAxesModal(false)}
-            data={useScenarioStore.getState().axes!}
+            data={axes}
             onScenariosGenerated={() => {
               // Navigation handled elsewhere
             }}

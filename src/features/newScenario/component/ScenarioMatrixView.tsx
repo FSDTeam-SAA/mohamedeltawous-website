@@ -90,6 +90,19 @@ const ScenarioMatrixView: React.FC = () => {
 
     setExportError(null);
 
+    // 1. Mandatory Data Guarantee for Report
+    const pA1 = axes.axisA.poleA1 || axes.axisA.pole1 || "";
+    const pA2 = axes.axisA.poleA2 || axes.axisA.pole2 || "";
+    const pB1 = axes.axisB.poleB1 || axes.axisB.pole1 || "";
+    const pB2 = axes.axisB.poleB2 || axes.axisB.pole2 || "";
+
+    if (!pA1 || !pA2 || !pB1 || !pB2) {
+      setExportError(
+        "Strategic poles are missing. Please re-check the Discovery step.",
+      );
+      return;
+    }
+
     const payload: ReportPayload = {
       workshopState: {
         company: {
@@ -100,20 +113,22 @@ const ScenarioMatrixView: React.FC = () => {
           horizonYear: company.horizonYear,
         },
         classification: {
-          predetermined: classification.predetermined,
-          uncertainties: classification.uncertainties,
+          predetermined: classification.predetermined.map((p) =>
+            typeof p === "string" ? p : p.force,
+          ),
+          uncertainties: classification.uncertainties.map((u) => u.force),
         },
         axes: {
           axisA: {
             label: axes.axisA.label,
-            poleA1: axes.axisA.poleA1 || axes.axisA.pole1 || "",
-            poleA2: axes.axisA.poleA2 || axes.axisA.pole2 || "",
+            poleA1: pA1,
+            poleA2: pA2,
             reason: axes.axisA.reason,
           } as AxisResult,
           axisB: {
             label: axes.axisB.label,
-            poleB1: axes.axisB.poleB1 || axes.axisB.pole1 || "",
-            poleB2: axes.axisB.poleB2 || axes.axisB.pole2 || "",
+            poleB1: pB1,
+            poleB2: pB2,
             reason: axes.axisB.reason,
           } as AxisResult,
         },
@@ -128,6 +143,8 @@ const ScenarioMatrixView: React.FC = () => {
         },
       },
     };
+
+    console.log("Exporting Report with EXACT User Example Payload:", payload);
 
     try {
       const response = await exportReport(payload);

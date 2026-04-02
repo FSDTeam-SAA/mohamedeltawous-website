@@ -21,7 +21,7 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
   data: axesData,
   onScenariosGenerated,
 }) => {
-  const { company, forces, conversationHistory } = useScenarioStore();
+  const { company, classification, conversationHistory } = useScenarioStore();
   const { mutateAsync: generateScenarios, isPending: isGenerating } =
     useGenerateScenarios();
   const [isMismatch, setIsMismatch] = useState(false);
@@ -83,90 +83,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
             axisB={axesData.axisB}
             scenarios={axesData.scenarios}
           />
-
-          {/* Blueprint Guide */}
-          {/* <div className="mt-12 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
-          
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-            <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100/50 shadow-sm">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-[#0F172A] tracking-tight">
-                    Understanding the Blueprint
-                  </h3>
-                  <p className="text-sm font-medium text-slate-500">
-                    How to read the strategic matrix for{" "}
-                    {company.name || "your company"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mb-4 text-indigo-600 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                    <Move className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
-                    1. The &quot;Axis&quot;
-                  </h4>
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    A <strong>Critical Uncertainty</strong> that has a massive
-                    impact on your business but is highly unpredictable. It
-                    forms the X or Y dimensions of the future.
-                  </p>
-                </div>
-
-         
-                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-4 text-emerald-600 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                    <ArrowRightLeft className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
-                    2. The &quot;Pole&quot;
-                  </h4>
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    An extreme &quot;end&quot; of an axis (e.g., Low vs High).
-                    Each axis features two opposing poles that represent
-                    contrasting versions of tomorrow.
-                  </p>
-                </div>
- 
-                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-4 text-amber-600 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-                    <Lightbulb className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
-                    3. The &quot;Reason&quot;
-                  </h4>
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    The strategic logic explaining why these specific axes were
-                    chosen, highlighting their <strong>Impact</strong>,{" "}
-                    <strong>Uncertainty</strong>, and{" "}
-                    <strong>Independence</strong>.
-                  </p>
-                </div>
- 
-                <div className="bg-slate-50 rounded-2xl p-6 group hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all border border-transparent hover:border-slate-200 cursor-default">
-                  <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center mb-4 text-rose-600 group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
-                    <Grid2X2 className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-base font-black text-[#0F172A] mb-2 tracking-tight">
-                    4. The &quot;Quadrant&quot;
-                  </h4>
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    Crossing the two axes yields 4 distinct boxes. Each quadrant
-                    represents a unique &quot;Future World&quot; that you must
-                    strategize and prepare for.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div> */}
         </div>
 
         <footer className="px-10 py-8 bg-white border-t border-slate-100 flex items-center justify-between">
@@ -189,6 +105,54 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
               disabled={isGenerating}
               onClick={async () => {
                 try {
+                  // 1. Construct refined forces list from classification result
+                  const predetermined = classification?.predetermined || [];
+                  const uncertainties = classification?.uncertainties || [];
+
+                  const forceStrings = [
+                    ...predetermined.map((p) =>
+                      typeof p === "string" ? p : p.force,
+                    ),
+                    ...uncertainties.map((u) =>
+                      typeof u === "string" ? u : u.force,
+                    ),
+                  ].filter(Boolean);
+
+                  // 2. Extract poles with robust fallback
+                  const pA1 =
+                    axesData.axisA.poleA1 || axesData.axisA.pole1 || "";
+                  const pA2 =
+                    axesData.axisA.poleA2 || axesData.axisA.pole2 || "";
+                  const pB1 =
+                    axesData.axisB.poleB1 || axesData.axisB.pole1 || "";
+                  const pB2 =
+                    axesData.axisB.poleB2 || axesData.axisB.pole2 || "";
+
+                  // 3. MANDATORY DATA GUARANTEE: Check if any required fields are empty
+                  if (
+                    forceStrings.length === 0 ||
+                    !pA1 ||
+                    !pA2 ||
+                    !pB1 ||
+                    !pB2
+                  ) {
+                    console.error(
+                      "Critical Data Missing for Scenario Generation:",
+                      {
+                        forcesCount: forceStrings.length,
+                        pA1: !!pA1,
+                        pA2: !!pA2,
+                        pB1: !!pB1,
+                        pB2: !!pB2,
+                      },
+                    );
+                    // Use the mismatch modal to guide user to retry or go back
+                    setMismatchVariant("alignment");
+                    setIsMismatch(true);
+                    return;
+                  }
+
+                  // 4. Construct payload
                   const payload = {
                     company: {
                       name: company.name,
@@ -200,24 +164,23 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                     axes: {
                       axisA: {
                         label: axesData.axisA.label,
-                        poleA1:
-                          axesData.axisA.pole1 || axesData.axisA.poleA1 || "",
-                        poleA2:
-                          axesData.axisA.pole2 || axesData.axisA.poleA2 || "",
+                        poleA1: pA1,
+                        poleA2: pA2,
                       },
                       axisB: {
                         label: axesData.axisB.label,
-                        poleB1:
-                          axesData.axisB.pole1 || axesData.axisB.poleB1 || "",
-                        poleB2:
-                          axesData.axisB.pole2 || axesData.axisB.poleB2 || "",
+                        poleB1: pB1,
+                        poleB2: pB2,
                       },
                     },
-                    forces: forces.map((f) => f.title || f.category),
+                    forces: forceStrings,
                     conversationHistory: conversationHistory,
                   };
 
-                  console.log("Generating Scenarios with Payload:", payload);
+                  console.log(
+                    "Generating Scenarios with Validated Payload:",
+                    payload,
+                  );
                   const response = await generateScenarios(payload);
                   console.log("Scenario Generation Response:", response);
 
@@ -228,8 +191,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                     console.error(
                       "Data mismatch: No scenarios returned from AI.",
                     );
-
-                    // Structural check: did it return classification again?
                     const respData = response?.data as unknown as
                       | Record<string, unknown>
                       | undefined;
@@ -238,7 +199,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                     } else {
                       setMismatchVariant("alignment");
                     }
-
                     setIsMismatch(true);
                     return;
                   }
@@ -300,7 +260,7 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
             const { setAxesModal, setClassificationModal } =
               useScenarioStore.getState();
             setAxesModal(false);
-            setClassificationModal(true); // Return to factors classification
+            setClassificationModal(true);
           }}
         />
       </div>

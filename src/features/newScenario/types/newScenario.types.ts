@@ -152,7 +152,7 @@ export interface ScenariosPayload {
 export interface ScenarioResult {
   id: number;
   name: string;
-  combination: string;
+  combination?: string;
   story: string;
   implications: string;
   signposts: string[];
@@ -216,8 +216,8 @@ export interface ReportPayload {
       horizonYear: string;
     };
     classification: {
-      predetermined: (string | PredeterminedItem)[];
-      uncertainties: UncertaintyItem[];
+      predetermined: string[];
+      uncertainties: string[];
     };
     axes: {
       axisA: AxisResult;
