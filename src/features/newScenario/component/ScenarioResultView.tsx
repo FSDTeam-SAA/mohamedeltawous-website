@@ -14,7 +14,7 @@ import {
   Check,
   ChevronLeft,
 } from "lucide-react";
-import { useScenarioStore } from "../store/useScenarioStore";
+import { useScenarioContext } from "../store/ScenarioContext";
 import {
   useGenerateScenarios,
   usePostWindtunnel,
@@ -45,7 +45,8 @@ const ScenarioResultView: React.FC = () => {
     addHistory,
     setStep,
     setScenarios: setScenariosToStore,
-  } = useScenarioStore();
+    updateStrategicOptions,
+  } = useScenarioContext();
   const {
     mutateAsync: generateScenarios,
     isPending,
@@ -200,9 +201,7 @@ const ScenarioResultView: React.FC = () => {
           const newStrategicOptions = response.data.strategicOptions;
 
           if (newStrategicOptions && newStrategicOptions.length > 0) {
-            useScenarioStore
-              .getState()
-              .updateStrategicOptions(newStrategicOptions);
+            updateStrategicOptions(newStrategicOptions);
           }
 
           setScenarios(mappedScenarios);
@@ -243,6 +242,7 @@ const ScenarioResultView: React.FC = () => {
     forces,
     generateScenarios,
     setScenariosToStore,
+    updateStrategicOptions,
   ]);
 
   if (isPending) {
