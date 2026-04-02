@@ -19,7 +19,7 @@ import {
   UncertaintyItem,
   PredeterminedItem,
 } from "../types/newScenario.types";
-import { useScenarioStore } from "../store/useScenarioStore";
+import { useScenarioContext } from "../store/ScenarioContext";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
 
 interface ForceClassificationModalProps {
@@ -45,7 +45,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
   onAxesGenerated,
 }) => {
   const { data } = fullResponse;
-  const { company, setStep, addHistory } = useScenarioStore();
+  const { company, setStep, addHistory } = useScenarioContext();
   const [error, setError] = React.useState<string | null>(null);
 
   if (!isOpen) return null;

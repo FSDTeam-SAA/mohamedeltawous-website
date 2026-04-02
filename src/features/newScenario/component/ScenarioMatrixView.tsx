@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useScenarioStore } from "../store/useScenarioStore";
+import { useScenarioContext } from "../store/ScenarioContext";
 import {
   Trophy,
   ShieldCheck,
@@ -110,7 +110,7 @@ const ScenarioMatrixView: React.FC = () => {
     classification,
     scenarios,
     resetStore,
-  } = useScenarioStore();
+  } = useScenarioContext();
 
   const { mutateAsync: exportReport, isPending: isExporting } =
     useExportReport();

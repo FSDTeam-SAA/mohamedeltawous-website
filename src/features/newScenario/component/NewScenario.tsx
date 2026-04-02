@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useScenarioStore } from "../store/useScenarioStore";
+import { useScenarioContext, ScenarioProvider } from "../store/ScenarioContext";
 import { useClassifyWorkshop, useGenerateAxes } from "../hooks/useNewScenario";
 import ForceClassificationModal from "./ForceClassificationModal";
 import ScenarioAxesModal from "./ScenarioAxesModal";
@@ -36,7 +36,7 @@ const PREDEFINED_CATEGORIES = [
   "Geographic",
 ];
 
-export default function NewScenario() {
+function NewScenarioContent() {
   const {
     currentStep,
     company,
@@ -53,7 +53,8 @@ export default function NewScenario() {
     setClassificationModal,
     setAxesModal,
     axes,
-  } = useScenarioStore();
+    conversationHistory,
+  } = useScenarioContext();
 
   const { mutateAsync: classifyWorker, isPending: isClassifying } =
     useClassifyWorkshop();
@@ -663,22 +664,21 @@ export default function NewScenario() {
                   }
 
                   // 2) Get full data
-                  const state = useScenarioStore.getState();
                   const payload = {
                     company: {
-                      projectTitle: state.company.projectTitle,
-                      name: state.company.name,
-                      industry: state.company.industry,
-                      summary: state.company.websiteUrl
-                        ? `${state.company.companySummary}\n\nCompany Website: ${state.company.websiteUrl}`
-                        : state.company.companySummary,
+                      projectTitle: company.projectTitle,
+                      name: company.name,
+                      industry: company.industry,
+                      summary: company.websiteUrl
+                        ? `${company.companySummary}\n\nCompany Website: ${company.websiteUrl}`
+                        : company.companySummary,
                     },
-                    focalQuestion: state.company.focalQuestion,
-                    forces: state.movingFactors.map(
+                    focalQuestion: company.focalQuestion,
+                    forces: movingFactors.map(
                       (f) =>
                         `${f.category}: ${f.description} ..... ${f.category}`,
                     ),
-                    conversationHistory: state.conversationHistory,
+                    conversationHistory: conversationHistory,
                   };
 
                   // 3) Log and API Submission
@@ -786,5 +786,13 @@ export default function NewScenario() {
         {currentStep === 5 && <ScenarioMatrixView />}
       </div>
     </section>
+  );
+}
+
+export default function NewScenario() {
+  return (
+    <ScenarioProvider>
+      <NewScenarioContent />
+    </ScenarioProvider>
   );
 }

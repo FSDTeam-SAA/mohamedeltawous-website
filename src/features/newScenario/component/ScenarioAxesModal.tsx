@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { X, Layers, Loader2, ArrowRight } from "lucide-react";
 import { AxesData, ScenariosResponse } from "../types/newScenario.types";
 import { useGenerateScenarios } from "../hooks/useNewScenario";
-import { useScenarioStore } from "../store/useScenarioStore";
+import { useScenarioContext } from "../store/ScenarioContext";
 import StrategicMatrixChart from "./StrategicMatrixChart";
 import DataMismatchModal from "./DataMismatchModal";
 
@@ -21,8 +21,16 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
   data: axesData,
   onScenariosGenerated,
 }) => {
-  const { company, classification, conversationHistory, addHistory } =
-    useScenarioStore();
+  const {
+    company,
+    classification,
+    conversationHistory,
+    addHistory,
+    setStep,
+    setScenarios,
+    setAxesModal,
+    setClassificationModal,
+  } = useScenarioContext();
   const { mutateAsync: generateScenarios, isPending: isGenerating } =
     useGenerateScenarios();
   const [isMismatch, setIsMismatch] = useState(false);
@@ -93,8 +101,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <button
               onClick={() => {
-                const { setClassificationModal, setAxesModal } =
-                  useScenarioStore.getState();
                 setAxesModal(false);
                 setClassificationModal(true);
               }}
@@ -208,8 +214,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                     addHistory("user", "Build 4 scenarios.");
                     addHistory("assistant", JSON.stringify(response.data));
                     onScenariosGenerated(response.data);
-                    const { setAxesModal, setStep } =
-                      useScenarioStore.getState();
                     setAxesModal(false);
                     setStep(4);
                   }
@@ -260,8 +264,6 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
           backStepLabel="Back to Step 3"
           onRestart={() => {
             setIsMismatch(false);
-            const { setAxesModal, setClassificationModal } =
-              useScenarioStore.getState();
             setAxesModal(false);
             setClassificationModal(true);
           }}
