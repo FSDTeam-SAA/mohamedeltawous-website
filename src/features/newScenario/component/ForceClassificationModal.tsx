@@ -179,7 +179,7 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
             <div className="grid gap-6">
               {data.uncertainties.map((item, idx) => (
                 <ForceCard
-                  key={item.force + idx}
+                  key={typeof item === "string" ? item : item.force + idx}
                   item={item}
                   type="uncertainty"
                 />
@@ -208,9 +208,9 @@ const ForceClassificationModal: React.FC<ForceClassificationModalProps> = ({
                     name: company.name,
                     industry: company.industry,
                     summary: company.companySummary,
-                    focalQuestion: company.focalQuestion,
-                    horizonYear: company.horizonYear,
                   },
+                  focalQuestion: company.focalQuestion,
+                  horizonYear: company.horizonYear,
                   classification: fullResponse.data,
                   conversationHistory: fullResponse.history,
                 };

@@ -70,7 +70,10 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       | import("../types/newScenario.types").PredeterminedItem
       | string
     )[];
-    uncertainties: import("../types/newScenario.types").UncertaintyItem[];
+    uncertainties: (
+      | import("../types/newScenario.types").UncertaintyItem
+      | string
+    )[];
   }) => set({ classification: data }),
   updateAxes: (axes) => set({ axes }),
   setScenarios: (scenarios) => set({ scenarios }),

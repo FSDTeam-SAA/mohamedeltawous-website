@@ -30,10 +30,10 @@ export interface ClassifyPayload {
     name: string;
     industry: string;
     summary: string;
-    focalQuestion: string;
   };
+  focalQuestion: string;
   forces: string[];
-  conversationHistory: unknown[]; // Using unknown[] for now as it's empty
+  conversationHistory: { role: string; content: string }[];
 }
 
 export interface PredeterminedItem {
@@ -52,7 +52,7 @@ export interface ClassifyResponse {
   success: boolean;
   data: {
     predetermined: (string | PredeterminedItem)[];
-    uncertainties: UncertaintyItem[];
+    uncertainties: (string | UncertaintyItem)[];
   };
   history: { role: string; content: string }[];
 }
@@ -62,12 +62,12 @@ export interface AxesPayload {
     name: string;
     industry: string;
     summary: string;
-    focalQuestion: string;
-    horizonYear: string;
   };
+  focalQuestion: string;
+  horizonYear: string;
   classification: {
     predetermined: (string | PredeterminedItem)[];
-    uncertainties: UncertaintyItem[];
+    uncertainties: (string | UncertaintyItem)[];
   };
   conversationHistory: { role: string; content: string }[];
 }
@@ -130,9 +130,9 @@ export interface ScenariosPayload {
     name: string;
     industry: string;
     summary: string;
-    focalQuestion: string;
-    horizonYear: string;
   };
+  focalQuestion: string;
+  horizonYear: string;
   axes: {
     axisA: {
       label: string;
@@ -194,8 +194,17 @@ export interface RobustMoves {
   defer: string[];
 }
 
+export interface WindtunnelScenarioEvaluation {
+  scenario: string;
+  evaluations: Array<{
+    option: string;
+    rating: string;
+    reasoning: string;
+  }>;
+}
+
 export interface WindtunnelResult {
-  windTunnel: WindtunnelCell[][];
+  windTunnel: WindtunnelCell[][] | WindtunnelScenarioEvaluation[];
   robustMoves: RobustMoves;
   strategicConclusion: string;
   recommendedOption: string;
@@ -245,7 +254,7 @@ export interface ScenarioState {
   movingFactors: MovingFactor[];
   classification: {
     predetermined: (string | PredeterminedItem)[];
-    uncertainties: UncertaintyItem[];
+    uncertainties: (string | UncertaintyItem)[];
   } | null;
   axes: AxesData | null;
   scenarios: ScenarioResult[] | null;
@@ -265,7 +274,7 @@ export interface ScenarioState {
   updateMovingFactors: (factors: MovingFactor[]) => void;
   setClassification: (data: {
     predetermined: (string | PredeterminedItem)[];
-    uncertainties: UncertaintyItem[];
+    uncertainties: (string | UncertaintyItem)[];
   }) => void;
   updateAxes: (axes: AxesData) => void;
   setScenarios: (scenarios: ScenarioResult[]) => void;

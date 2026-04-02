@@ -18,7 +18,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { useExportReport } from "../hooks/useNewScenario";
-import { ReportPayload, AxisResult } from "../types/newScenario.types";
+import {
+  ReportPayload,
+  AxisResult,
+  WindtunnelResult,
+  WindtunnelScenarioEvaluation,
+  WindtunnelCell,
+} from "../types/newScenario.types";
 import { generatePdfFromMarkdown } from "../utils/generatePdfFromMarkdown";
 import { ChevronLeft } from "lucide-react";
 
@@ -65,6 +71,35 @@ const ensureArray = (value: unknown): string[] => {
   return [value];
 };
 
+/**
+ * Normalize windtunnel results into a standard cell array for a specific option.
+ * Correctly handles both Option-major 2D arrays and Scenario-major object arrays.
+ */
+const normalizeWindtunnelData = (
+  windtunnelData: WindtunnelResult,
+  optIdx: number,
+  strategicOptions: string[],
+): WindtunnelCell[] => {
+  const { windTunnel } = windtunnelData;
+  if (!windTunnel || windTunnel.length === 0) return [];
+
+  // 1. Check if it's the 2D array structure (Option-major)
+  if (Array.isArray(windTunnel[0])) {
+    return (windTunnel as WindtunnelCell[][])[optIdx] || [];
+  }
+
+  // 2. Check if it's the Scenario-major object array structure
+  const scenarioObjs = windTunnel as WindtunnelScenarioEvaluation[];
+  return scenarioObjs.map((scenarioObj) => {
+    // Try to match by option string first for robustness
+    const matchingEval = scenarioObj.evaluations.find(
+      (e) => e.option === strategicOptions[optIdx],
+    );
+    // Fallback to the same index if the string match fails
+    return matchingEval || scenarioObj.evaluations[optIdx];
+  });
+};
+
 const ScenarioMatrixView: React.FC = () => {
   const {
     windtunnelData,
@@ -103,6 +138,13 @@ const ScenarioMatrixView: React.FC = () => {
       return;
     }
 
+    // 2. Full Matrix Normalization for Report
+    // This ensures that the AI receives the exact 2D array it expects, regardless of store structure.
+    const normalizedFullMatrix: WindtunnelCell[][] = strategicOptions.map(
+      (_, optIdx) =>
+        normalizeWindtunnelData(windtunnelData, optIdx, strategicOptions),
+    );
+
     const payload: ReportPayload = {
       workshopState: {
         company: {
@@ -116,7 +158,9 @@ const ScenarioMatrixView: React.FC = () => {
           predetermined: classification.predetermined.map((p) =>
             typeof p === "string" ? p : p.force,
           ),
-          uncertainties: classification.uncertainties.map((u) => u.force),
+          uncertainties: classification.uncertainties.map((u) =>
+            typeof u === "string" ? u : u.force,
+          ),
         },
         axes: {
           axisA: {
@@ -127,16 +171,25 @@ const ScenarioMatrixView: React.FC = () => {
           } as AxisResult,
           axisB: {
             label: axes.axisB.label,
-            poleB1: pB1,
-            poleB2: pB2,
+            pole1: pB1,
+            pole2: pB2,
             reason: axes.axisB.reason,
           } as AxisResult,
         },
         scenarios: {
-          scenarios: scenarios,
+          scenarios: scenarios.map((s) => ({
+            id: s.id,
+            name: s.name,
+            story:
+              s.story ||
+              (s as unknown as { narrative?: string }).narrative ||
+              "",
+            implications: s.implications,
+            signposts: s.signposts,
+          })),
         },
         windTunnelResult: {
-          windTunnel: windtunnelData.windTunnel,
+          windTunnel: normalizedFullMatrix,
           robustMoves: windtunnelData.robustMoves,
           strategicConclusion: windtunnelData.strategicConclusion,
           recommendedOption: windtunnelData.recommendedOption,
@@ -421,8 +474,14 @@ const ScenarioMatrixView: React.FC = () => {
                         {option}
                       </p>
                     </td>
-                    {windtunnelData?.windTunnel?.[optIdx] ? (
-                      windtunnelData.windTunnel[optIdx].map((cell, sceIdx) => {
+                    {windtunnelData?.windTunnel ? (
+                      normalizeWindtunnelData(
+                        windtunnelData,
+                        optIdx,
+                        strategicOptions,
+                      ).map((cell, sceIdx) => {
+                        if (!cell) return null;
+
                         const styles = getRatingStyles(cell.rating);
 
                         return (

@@ -21,7 +21,8 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
   data: axesData,
   onScenariosGenerated,
 }) => {
-  const { company, classification, conversationHistory } = useScenarioStore();
+  const { company, classification, conversationHistory, addHistory } =
+    useScenarioStore();
   const { mutateAsync: generateScenarios, isPending: isGenerating } =
     useGenerateScenarios();
   const [isMismatch, setIsMismatch] = useState(false);
@@ -158,9 +159,9 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                       name: company.name,
                       industry: company.industry,
                       summary: company.companySummary,
-                      focalQuestion: company.focalQuestion,
-                      horizonYear: company.horizonYear,
                     },
+                    focalQuestion: company.focalQuestion,
+                    horizonYear: company.horizonYear,
                     axes: {
                       axisA: {
                         label: axesData.axisA.label,
@@ -203,7 +204,9 @@ const ScenarioAxesModal: React.FC<ScenarioAxesModalProps> = ({
                     return;
                   }
 
-                  if (response?.data) {
+                  if (response?.success) {
+                    addHistory("user", "Build 4 scenarios.");
+                    addHistory("assistant", JSON.stringify(response.data));
                     onScenariosGenerated(response.data);
                     const { setAxesModal, setStep } =
                       useScenarioStore.getState();

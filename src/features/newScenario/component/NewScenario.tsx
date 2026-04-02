@@ -672,13 +672,13 @@ export default function NewScenario() {
                       summary: state.company.websiteUrl
                         ? `${state.company.companySummary}\n\nCompany Website: ${state.company.websiteUrl}`
                         : state.company.companySummary,
-                      focalQuestion: state.company.focalQuestion,
                     },
+                    focalQuestion: state.company.focalQuestion,
                     forces: state.movingFactors.map(
                       (f) =>
                         `${f.category}: ${f.description} ..... ${f.category}`,
                     ),
-                    conversationHistory: [],
+                    conversationHistory: state.conversationHistory,
                   };
 
                   // 3) Log and API Submission
@@ -694,8 +694,6 @@ export default function NewScenario() {
                     if (response?.data) {
                       // Update History
                       addHistory("user", "Classify forces.");
-                      addHistory("assistant", JSON.stringify(response.data));
-
                       addHistory("assistant", JSON.stringify(response.data));
 
                       setClassification(response.data);
@@ -758,7 +756,11 @@ export default function NewScenario() {
           <ForceClassificationModal
             isOpen={isClassificationModalOpen}
             onClose={() => setClassificationModal(false)}
-            fullResponse={{ success: true, data: classification, history: [] }}
+            fullResponse={{
+              success: true,
+              data: classification,
+              history: [],
+            }}
             generateAxes={generateAxes}
             isGeneratingAxes={isGeneratingAxes}
             onAxesGenerated={(data) => {
