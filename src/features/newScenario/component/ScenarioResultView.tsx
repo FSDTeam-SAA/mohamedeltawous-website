@@ -162,9 +162,9 @@ const ScenarioResultView: React.FC = () => {
             name: company.name,
             industry: company.industry,
             summary: company.companySummary,
-            focalQuestion: company.focalQuestion,
-            horizonYear: company.horizonYear,
           },
+          focalQuestion: company.focalQuestion,
+          horizonYear: company.horizonYear,
           axes: {
             axisA: {
               label: axes.axisA.label,
