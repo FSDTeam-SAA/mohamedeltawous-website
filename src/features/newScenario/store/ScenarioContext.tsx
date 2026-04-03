@@ -31,11 +31,7 @@ const emptyCompany: CompanyInfo = {
   websiteUrl: "",
 };
 
-const defaultStrategicOptions = [
-  "Option A: Full digital platform build — invest AED 400M over five years to build a standalone retail digital wealth platform targeting the mass-affluent segment.",
-  "Option B: Digitally enhanced relationship model — invest AED 120M in client-facing digital tools, AI-assisted advisor support, and improved reporting, while keeping the relationship model intact.",
-  "Option C: Stay the course — minimal digital investment, focus resources on deepening HNW relationships and expanding geographically within the GCC.",
-];
+const defaultStrategicOptions: string[] = [];
 
 const ScenarioContext = createContext<ScenarioState | undefined>(undefined);
 
