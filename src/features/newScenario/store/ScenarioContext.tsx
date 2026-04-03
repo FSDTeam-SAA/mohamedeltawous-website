@@ -140,10 +140,7 @@ export const ScenarioProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const setClassificationAction = useCallback(
-    (data: {
-      predetermined: (string | PredeterminedItem)[];
-      uncertainties: (string | UncertaintyItem)[];
-    }) => {
+    (data: ScenarioState["classification"]) => {
       setClassification(data);
     },
     [],

@@ -79,8 +79,8 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
   const mapped = getMappedScenarios();
 
   return (
-    <div className="w-full flex flex-col items-center justify-center p-4 sm:p-12 overflow-visible min-h-[700px]">
-      <div className="relative w-full max-w-[28rem] aspect-square mx-auto">
+    <div className="w-full flex flex-col items-center justify-center p-2 sm:p-6 overflow-visible min-h-[580px]">
+      <div className="relative w-full max-w-[24rem] aspect-square mx-auto">
         {/* Main Matrix Grid */}
         <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 bg-white shadow-2xl rounded-[2.5rem] overflow-hidden border border-slate-200">
           {/* Top Left Quadrant */}
@@ -129,8 +129,8 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
         </div>
 
         {/* Central Origin Node */}
-        <div className="absolute top-1/2 left-1/2 w-5 h-5 rounded-full bg-slate-800 border-4 border-white -translate-x-1/2 -translate-y-1/2 shadow-sm z-20 pointer-events-none flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-white" />
+        <div className="absolute top-1/2 left-1/2 w-4 h-4 rounded-full bg-slate-900 border-2 border-white -translate-x-1/2 -translate-y-1/2 shadow-sm z-20 pointer-events-none flex items-center justify-center">
+          <div className="w-1 h-1 rounded-full bg-white" />
         </div>
 
         {/* =======================
@@ -138,32 +138,29 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
             ======================= */}
 
         {/* Top Label (High) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full flex flex-col items-center group z-30 w-[300px] pb-6">
-          {/* Line extending out */}
-          <div className="w-1 h-6 bg-slate-800 absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none flex justify-center">
-            <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[8px] border-l-transparent border-r-transparent border-b-slate-800 -mt-1" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[calc(100%+1.5rem)] flex flex-col items-center z-30 w-[280px]">
+          <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
+            {axisA.label}
           </div>
-
-          <div className="flex flex-col items-center bg-white/60 backdrop-blur-xl p-3 border border-white/40 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 transition-all group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:-translate-y-1">
-            <div className="text-[11px] sm:text-[12px] font-black text-emerald-700 bg-emerald-50 px-4 py-1.5 rounded-full mt-2 border border-emerald-200 shadow-sm flex items-center gap-1.5">
-              <ArrowUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              HIGH: {axisA.poleA2 || axisA.pole2}
+          <div className="flex flex-col items-center">
+            <div className="text-[11px] font-black text-emerald-600 flex items-center gap-1.5 uppercase tracking-wide">
+              <ArrowUp className="w-3 h-3" />
+              {axisA.poleA2 || axisA.pole2}
+            </div>
+            <div className="mt-1 text-[9px] font-medium text-slate-500 max-w-[220px] text-center italic">
+              {axisA.selectedForce}
             </div>
           </div>
         </div>
 
         {/* Bottom Label (Low) */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full flex flex-col items-center z-30 w-[300px] pt-6 group">
-          {/* Line extending out */}
-          <div className="w-0.5 h-6 bg-slate-300 absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none flex justify-center items-end">
-            <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-300 -mb-1" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[calc(100%+1.5rem)] flex flex-col items-center z-30 w-[280px]">
+          <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
+            {axisA.label}
           </div>
-
-          <div className="flex flex-col items-center bg-white/60 backdrop-blur-xl p-3 border border-white/40 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] ring-1 ring-slate-900/5 transition-all group-hover:-translate-y-1">
-            <div className="text-[11px] sm:text-[12px] font-black text-rose-600 bg-rose-50 px-4 py-1.5 rounded-full border border-rose-200 shadow-sm flex items-center gap-1.5">
-              <ArrowDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              LOW: {axisA.poleA1 || axisA.pole1}
-            </div>
+          <div className="text-[11px] font-black text-rose-500 flex items-center gap-1.5 uppercase tracking-wide">
+            <ArrowDown className="w-3 h-3" />
+            {axisA.poleA1 || axisA.pole1}
           </div>
         </div>
 
@@ -172,32 +169,29 @@ const StrategicMatrixChart: React.FC<StrategicMatrixChartProps> = ({
             ======================= */}
 
         {/* Right Label (High) */}
-        <div className="absolute right-0 top-1/2 translate-x-full -translate-y-1/2 flex flex-col justify-center items-start group z-30 w-[280px] pl-6">
-          {/* Line extending out */}
-          <div className="h-1 w-6 bg-slate-800 absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-end">
-            <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[8px] border-t-transparent border-b-transparent border-l-slate-800 -mr-1" />
+        <div className="absolute right-0 top-1/2 translate-x-[calc(100%+0.75rem)] -translate-y-1/2 flex flex-col items-start z-30 w-[140px]">
+          <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 pl-1">
+            {axisB.label}
           </div>
-
-          <div className="flex flex-col items-start bg-white/60 backdrop-blur-xl p-4 border border-white/40 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 transition-all group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group-hover:translate-x-1">
-            <div className="text-[11px] sm:text-[12px] font-black text-emerald-700 bg-emerald-50 px-4 py-1.5 rounded-full mt-2.5 border border-emerald-200 shadow-sm flex items-center gap-1.5 w-fit">
-              <ArrowRightIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              HIGH: {axisB.poleB2 || axisB.pole2}
+          <div className="flex flex-col items-start">
+            <div className="text-[10px] font-black text-emerald-600 flex items-center gap-1 uppercase tracking-wide">
+              <ArrowRightIcon className="w-2.5 h-2.5" />
+              {axisB.poleB2 || axisB.pole2}
+            </div>
+            <div className="mt-1 text-[8px] font-medium text-slate-500 max-w-[130px] italic line-clamp-2 leading-tight">
+              {axisB.selectedForce}
             </div>
           </div>
         </div>
 
         {/* Left Label (Low) */}
-        <div className="absolute left-0 top-1/2 -translate-x-full -translate-y-1/2 flex flex-col justify-center items-end z-30 w-[240px] pr-6 group">
-          {/* Line extending out */}
-          <div className="h-0.5 w-6 bg-slate-300 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-start">
-            <div className="w-0 h-0 border-t-[4px] border-b-[4px] border-r-[6px] border-t-transparent border-b-transparent border-r-slate-300 -ml-1" />
+        <div className="absolute left-0 top-1/2 -translate-x-[calc(100%+0.75rem)] -translate-y-1/2 flex flex-col items-end z-30 w-[140px]">
+          <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 pr-1">
+            {axisB.label}
           </div>
-
-          <div className="flex flex-col items-end bg-white/60 backdrop-blur-xl p-3 border border-white/40 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] ring-1 ring-slate-900/5 transition-all group-hover:-translate-x-1">
-            <div className="text-[11px] sm:text-[12px] font-black text-rose-600 bg-rose-50 px-4 py-1.5 rounded-full border border-rose-200 shadow-sm flex items-center gap-1.5 w-fit">
-              <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              LOW: {axisB.poleB1 || axisB.pole1}
-            </div>
+          <div className="text-[10px] font-black text-rose-500 flex items-center gap-1 uppercase tracking-wide">
+            <ArrowLeft className="w-2.5 h-2.5" />
+            {axisB.poleB1 || axisB.pole1}
           </div>
         </div>
       </div>

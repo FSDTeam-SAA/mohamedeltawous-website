@@ -74,6 +74,7 @@ export interface AxesPayload {
 
 export interface AxisResult {
   label: string;
+  selectedForce: string;
   pole1?: string;
   pole2?: string;
   poleA1?: string;
@@ -272,10 +273,7 @@ export interface ScenarioState {
   addForce: (force: Omit<DrivingForce, "id" | "formatted">) => void;
   removeForce: (id: string) => void;
   updateMovingFactors: (factors: MovingFactor[]) => void;
-  setClassification: (data: {
-    predetermined: (string | PredeterminedItem)[];
-    uncertainties: (string | UncertaintyItem)[];
-  }) => void;
+  setClassification: (data: ScenarioState["classification"]) => void;
   updateAxes: (axes: AxesData) => void;
   setScenarios: (scenarios: ScenarioResult[]) => void;
   updateStrategicOptions: (options: string[]) => void;

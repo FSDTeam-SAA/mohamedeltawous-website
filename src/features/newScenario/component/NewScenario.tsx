@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useScenarioContext, ScenarioProvider } from "../store/ScenarioContext";
 import { useClassifyWorkshop, useGenerateAxes } from "../hooks/useNewScenario";
-import ForceClassificationModal from "./ForceClassificationModal";
-import ScenarioAxesModal from "./ScenarioAxesModal";
+import ForceClassificationView from "./ForceClassificationView";
 import ScenarioResultView from "./ScenarioResultView";
 import ScenarioMatrixView from "./ScenarioMatrixView";
 import {
@@ -156,7 +155,7 @@ function NewScenarioContent() {
     { label: "Company Profile", icon: Building2 },
     { label: "Moving Factors", icon: Zap },
     { label: "Scenario Discovery", icon: Globe },
-    { label: "Scenario Matrix", icon: CheckCircle2 },
+    { label: "Generate Report", icon: CheckCircle2 },
   ];
 
   return (
@@ -452,7 +451,7 @@ function NewScenarioContent() {
           </div>
         )}
         {/* Step 3 - Moving Factors */}
-        {currentStep === 3 && (
+        {currentStep === 3 && !classification && (
           <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 p-10 border border-slate-100">
             {/* Header */}
             <header className="mb-10">
@@ -628,8 +627,10 @@ function NewScenarioContent() {
                 {classification && (
                   <button
                     type="button"
-                    onClick={() => setClassificationModal(true)}
-                    className="bg-blue-50 text-blue-700 px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-100 transition-all active:scale-95 border border-blue-100"
+                    onClick={() => {
+                      // No-op for now, we show it inline anyway
+                    }}
+                    className="bg-blue-50 text-blue-700 px-8 py-4 rounded-xl font-bold flex items-center gap-2 border border-blue-100 opacity-0 pointer-events-none"
                   >
                     <LayoutGrid className="w-4 h-4" />
                     Review Analysis
@@ -657,9 +658,8 @@ function NewScenarioContent() {
 
                   setDfError("");
 
-                  // If we already have classification, just open it
+                  // If we already have classification, it's already showing inline
                   if (classification) {
-                    setClassificationModal(true);
                     return;
                   }
 
@@ -697,7 +697,6 @@ function NewScenarioContent() {
                       addHistory("assistant", JSON.stringify(response.data));
 
                       setClassification(response.data);
-                      setClassificationModal(true);
                     }
                   } catch (err: unknown) {
                     console.error("API submission failed:", err);
@@ -728,7 +727,7 @@ function NewScenarioContent() {
                       );
                     } else {
                       setDfError(
-                        `${errorMessage} Please refinement your inputs or go back to Step 2 to retry.`,
+                        `${errorMessage} Please check your connection or try simplifying your factor descriptions and try again.`,
                       );
                     }
                   }
@@ -751,35 +750,25 @@ function NewScenarioContent() {
             </div>
           </div>
         )}
-        {/* Classification Modal */}
-        {classification && (
-          <ForceClassificationModal
-            isOpen={isClassificationModalOpen}
-            onClose={() => setClassificationModal(false)}
+
+        {/* Step 3 - Strategic Pulse Analysis Results */}
+        {currentStep === 3 && classification && (
+          <ForceClassificationView
             fullResponse={{
               success: true,
               data: classification,
-              history: [],
+              history: conversationHistory,
             }}
             generateAxes={generateAxes}
             isGeneratingAxes={isGeneratingAxes}
             onAxesGenerated={(data) => {
               updateAxes(data);
-              setAxesModal(true);
+              setStep(4);
             }}
+            onBack={() => setClassification(null)}
           />
         )}
-        {/* Scenario Axes Modal */}
-        {axes && (
-          <ScenarioAxesModal
-            isOpen={isAxesModalOpen}
-            onClose={() => setAxesModal(false)}
-            data={axes}
-            onScenariosGenerated={() => {
-              // Navigation handled elsewhere
-            }}
-          />
-        )}
+
         {/* Step 4: Scenario Results Deep Dive */}
         {currentStep === 4 && <ScenarioResultView />}
         {/* Step 5: Strategic Wind-tunnelling (Scenario Matrix) */}
