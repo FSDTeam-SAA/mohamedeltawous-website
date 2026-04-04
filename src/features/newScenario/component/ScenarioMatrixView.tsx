@@ -464,7 +464,10 @@ const ScenarioMatrixView: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {strategicOptions.map((option, optIdx) => (
+                {(strategicOptions.length > 0
+                  ? strategicOptions
+                  : windtunnelData.generatedOptions || []
+                ).map((option, optIdx) => (
                   <tr
                     key={optIdx}
                     className="border-t border-slate-50 group hover:bg-slate-50/30 transition-colors"
@@ -478,7 +481,9 @@ const ScenarioMatrixView: React.FC = () => {
                       normalizeWindtunnelData(
                         windtunnelData,
                         optIdx,
-                        strategicOptions,
+                        strategicOptions.length > 0
+                          ? strategicOptions
+                          : windtunnelData.generatedOptions || [],
                       ).map((cell, sceIdx) => {
                         if (!cell) return null;
 

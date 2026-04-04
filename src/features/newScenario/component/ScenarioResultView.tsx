@@ -131,6 +131,15 @@ const ScenarioResultView: React.FC = () => {
 
       if (response?.success && response?.data) {
         setWindtunnelData(response.data);
+
+        // Sync generated options if backend provided new ones
+        if (
+          response.data.generatedOptions &&
+          response.data.generatedOptions.length > 0
+        ) {
+          updateStrategicOptions(response.data.generatedOptions);
+        }
+
         addHistory("user", "Run wind tunnel.");
         addHistory("assistant", JSON.stringify(response.data));
         setStep(5);

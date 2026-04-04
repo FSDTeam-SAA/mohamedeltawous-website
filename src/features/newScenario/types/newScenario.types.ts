@@ -209,6 +209,7 @@ export interface WindtunnelResult {
   robustMoves: RobustMoves;
   strategicConclusion: string;
   recommendedOption: string;
+  generatedOptions?: string[];
 }
 
 export interface WindtunnelResponse {
