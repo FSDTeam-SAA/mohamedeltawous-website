@@ -13,6 +13,7 @@ import {
   Plus,
   Check,
   ChevronLeft,
+  Info,
 } from "lucide-react";
 import { useScenarioContext } from "../store/ScenarioContext";
 import {
@@ -22,7 +23,6 @@ import {
 import { ScenarioResult, WindtunnelPayload } from "../types/newScenario.types";
 import StrategicMatrixChart from "./StrategicMatrixChart";
 import DataMismatchModal from "./DataMismatchModal";
-import { Info } from "lucide-react";
 
 /**
  * Helper to truncate text to exactly N words.
@@ -570,10 +570,10 @@ const ScenarioResultView: React.FC = () => {
                             </h2>
                             <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-400 border border-slate-100 flex items-center gap-1.5 shadow-sm">
                               <LayoutGrid className="w-3 h-3" />
-                              {s.combination === "A2+B1" && "Low / Low"}
-                              {s.combination === "A2+B2" && "Low / High"}
-                              {s.combination === "A1+B1" && "Low / High"}
-                              {s.combination === "A1+B2" && "High / High"}
+                              {s.combination === "A1+B1" && "Low / Low"}
+                              {s.combination === "A1+B2" && "High / Low"}
+                              {s.combination === "A2+B1" && "Low / High"}
+                              {s.combination === "A2+B2" && "High / High"}
                             </span>
                           </div>
                         </div>
