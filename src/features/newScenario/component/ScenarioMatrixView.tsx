@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { generatePdfFromMarkdown } from "../utils/generatePdfFromMarkdown";
 import { useScenarioContext } from "../store/ScenarioContext";
 import {
   Trophy,
@@ -25,7 +28,6 @@ import {
   WindtunnelScenarioEvaluation,
   WindtunnelCell,
 } from "../types/newScenario.types";
-import { generatePdfFromMarkdown } from "../utils/generatePdfFromMarkdown";
 import { ChevronLeft } from "lucide-react";
 
 /**
@@ -116,6 +118,31 @@ const ScenarioMatrixView: React.FC = () => {
     useExportReport();
 
   const [exportError, setExportError] = useState<string | null>(null);
+  const [streamedMarkdown, setStreamedMarkdown] = useState<string>("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [generationComplete, setGenerationComplete] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll logic for the streaming markdown
+  useEffect(() => {
+    if (scrollRef.current && isStreaming) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [streamedMarkdown, isStreaming]);
+
+  const handleDownloadPdf = async () => {
+    if (!streamedMarkdown) return;
+
+    const safeCompanyName = company.name
+      ? company.name.replaceAll(/[^a-z0-9]/gi, "_")
+      : "Report";
+    const filename = `${safeCompanyName}_Strategic_Report_${company.horizonYear || "2030"}.pdf`;
+
+    await generatePdfFromMarkdown(streamedMarkdown, filename);
+    resetStore();
+    setStreamedMarkdown("");
+    setGenerationComplete(false);
+  };
 
   const handleExport = async () => {
     if (!axes || !classification || !scenarios || !windtunnelData) {
@@ -124,6 +151,9 @@ const ScenarioMatrixView: React.FC = () => {
     }
 
     setExportError(null);
+    setStreamedMarkdown("");
+    setIsStreaming(true);
+    setGenerationComplete(false);
 
     // 1. Mandatory Data Guarantee for Report
     const pA1 = axes.axisA.poleA1 || axes.axisA.pole1 || "";
@@ -135,11 +165,11 @@ const ScenarioMatrixView: React.FC = () => {
       setExportError(
         "Strategic poles are missing. Please re-check the Discovery step.",
       );
+      setIsStreaming(false);
       return;
     }
 
     // 2. Full Matrix Normalization for Report
-    // This ensures that the AI receives the exact 2D array it expects, regardless of store structure.
     const normalizedFullMatrix: WindtunnelCell[][] = strategicOptions.map(
       (_, optIdx) =>
         normalizeWindtunnelData(windtunnelData, optIdx, strategicOptions),
@@ -197,30 +227,43 @@ const ScenarioMatrixView: React.FC = () => {
       },
     };
 
-    console.log("Exporting Report with EXACT User Example Payload:", payload);
-
     try {
-      const response = await exportReport(payload);
+      // Use native fetch for streaming
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/workshop/report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
 
-      if (response.success && response.data?.fullReportMarkdown) {
-        const safeCompanyName = company.name
-          ? company.name.replaceAll(/[^a-z0-9]/gi, "_")
-          : "Report";
-        const filename = `${safeCompanyName}_Strategic_Report_${company.horizonYear || "2030"}.pdf`;
+      if (!response.ok) throw new Error("Server communication failed.");
 
-        await generatePdfFromMarkdown(
-          response.data.fullReportMarkdown,
-          filename,
-        );
-        resetStore(); // Reset store only after successful PDF generation
-      } else {
-        setExportError(
-          "The server returned an empty report. Please try again.",
-        );
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("Binary stream not available.");
+
+      const decoder = new TextDecoder();
+      let streamBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        streamBuffer += chunk;
+
+        // Strip the technical marker if it appears
+        const cleanMarkdown = streamBuffer.split("###JSON_DATA###")[0];
+        setStreamedMarkdown(cleanMarkdown.trim());
       }
+
+      setIsStreaming(false);
+      setGenerationComplete(true);
     } catch (err) {
       console.error("Export report failed:", err);
       setExportError("Failed to generate the report. Please try again.");
+      setIsStreaming(false);
     }
   };
 
@@ -626,6 +669,109 @@ const ScenarioMatrixView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* EXPORT MODAL & STREAMING VIEW */}
+      {(isStreaming || streamedMarkdown) && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="bg-white rounded-[3rem] p-8 md:p-12 max-w-4xl w-full h-[85vh] shadow-2xl border border-white/20 flex flex-col space-y-8 animate-in zoom-in-95 duration-500">
+            {/* Header */}
+            <div className="flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-6">
+                <div className="relative w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-[#0F172A] tracking-tighter">
+                    {isStreaming ? "Drafting Report..." : "Generation Complete"}
+                  </h3>
+                  <div className="flex items-center gap-2 text-blue-600 mt-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      AI Strategic Synthesis
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-blue-200" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      7 Strategic Sections
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close button only when NOT streaming */}
+              {!isStreaming && (
+                <button
+                  onClick={() => {
+                    setStreamedMarkdown("");
+                    setIsStreaming(false);
+                  }}
+                  className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-95 group"
+                >
+                  <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+                </button>
+              )}
+            </div>
+
+            {/* Markdown Stream Content */}
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar space-y-6"
+            >
+              <div className="prose prose-slate prose-sm md:prose-base max-w-none prose-headings:font-black prose-headings:tracking-tighter prose-headings:text-slate-900 prose-p:text-slate-600 prose-p:leading-relaxed prose-strong:text-blue-600 prose-strong:font-bold prose-ul:list-none prose-ul:pl-0 prose-li:mb-4">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {streamedMarkdown ||
+                    "> Gathering insights and preparing your strategic synthesis..."}
+                </ReactMarkdown>
+                {/* Download PDF Button - Appears after streaming is complete */}
+                {generationComplete && (
+                  <div className="mt-8 p-8 border-t border-slate-100 flex justify-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <button
+                      onClick={handleDownloadPdf}
+                      className="group relative flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200 cursor-pointer"
+                    >
+                      <Download className="w-5 h-5 group-hover:bounce transition-all" />
+                      Download Strategic PDF Report
+                    </button>
+                  </div>
+                )}
+                {/* Visual Cursor */}
+                {isStreaming && (
+                  <span className="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse rounded-full align-middle" />
+                )}
+              </div>
+            </div>
+
+            {/* Footer Status */}
+            <div className="pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full bg-blue-600 rounded-full transition-all duration-1000 ${isStreaming ? "w-2/3 animate-pulse-slow origin-left" : "w-full"}`}
+                  />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                  {isStreaming
+                    ? "Streaming from AI Core"
+                    : "Synthesis Complete"}
+                </span>
+              </div>
+
+              <div
+                className={`flex items-center gap-2 px-4 py-2 rounded-full ${isStreaming ? "text-rose-500 bg-rose-50" : "text-emerald-600 bg-emerald-50"}`}
+              >
+                {isStreaming ? (
+                  <AlertCircle className="w-4 h-4" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
+                <span className="text-[10px] font-black uppercase tracking-widest font-bold">
+                  {isStreaming
+                    ? "Please don't close this tab"
+                    : "Ready for Download"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* REASONING MODAL */}
       {matrixModal.isOpen && (

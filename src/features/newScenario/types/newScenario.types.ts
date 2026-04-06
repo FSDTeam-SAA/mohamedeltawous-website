@@ -243,10 +243,9 @@ export interface ReportPayload {
 
 export interface ReportResponse {
   success: boolean;
-  data?: {
-    fullReportMarkdown: string;
+  data: {
+    pdfUrl: string;
   };
-  message?: string;
 }
 
 export interface ScenarioState {
