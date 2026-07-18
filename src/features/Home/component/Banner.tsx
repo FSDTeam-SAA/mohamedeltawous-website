@@ -341,7 +341,7 @@ export default function Banner() {
                     </p>
                     <p className="text-[20px] font-extrabold text-[#0F172A] leading-tight">
                       <CountUp
-                        end={96.4}
+                        end={98.5}
                         decimals={1}
                         suffix="%"
                         fromTop

@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
-import type { Container, Engine } from "@tsparticles/engine";
+import type { IParticlesProps } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import type { ISourceOptions } from "@tsparticles/engine";
 
 export default function ParticlesBackground({
   id = "tsparticles",
@@ -15,7 +14,7 @@ export default function ParticlesBackground({
 
   // this should be run only once per application lifetime
   useEffect(() => {
-    initParticlesEngine(async (engine: Engine) => {
+    initParticlesEngine(async (engine) => {
       // you can initiate the tsParticles instance (engine) here, adding custom shapes or presets
       // this loads the slim version of tsParticles for better performance
       await loadSlim(engine);
@@ -24,11 +23,14 @@ export default function ParticlesBackground({
     });
   }, []);
 
-  const particlesLoaded = useCallback(async (container?: Container) => {
-    // console.log(container);
-  }, []);
+  const particlesLoaded = useCallback<NonNullable<IParticlesProps["particlesLoaded"]>>(
+    async () => {
+      // console.log(container);
+    },
+    []
+  );
 
-  const options: ISourceOptions = {
+  const options: IParticlesProps["options"] = {
     fpsLimit: 60,
     interactivity: {
       events: {
