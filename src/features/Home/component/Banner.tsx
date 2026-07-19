@@ -212,7 +212,7 @@ export default function Banner() {
             <div className="relative rounded-2xl overflow-hidden shadow-[0_32px_80px_rgba(15,23,42,0.16)] border border-white/60">
               <video
                 ref={videoRef}
-                src="/videos/banner.mp4"
+                src="/videos/home-video.mp4"
                 className="w-full h-full object-cover aspect-video"
                 loop
                 autoPlay
